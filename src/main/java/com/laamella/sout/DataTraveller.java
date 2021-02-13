@@ -1,59 +1,26 @@
 package com.laamella.sout;
 
-import java.io.IOException;
-import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.stream.Stream;
-
-import static java.util.Arrays.asList;
-import static java.util.Arrays.stream;
 
 class DataTraveller {
+    private final SoutConfiguration configuration;
 
-    static Iterator<?> valueIterator(Object value) {
-        if (value instanceof List) {
-            return ((List<?>) value).iterator();
-        } else if (value instanceof Object[]) {
-            return stream((Object[]) value).iterator();
-        } else if (value instanceof int[]) {
-            return stream((int[]) value).boxed().iterator();
-        } else if (value instanceof Stream) {
-            return ((Stream<?>) value).iterator();
-        } else if (value instanceof Iterator) {
-            return (Iterator<?>) value;
-        } else if (value instanceof Iterable) {
-            return ((Iterable<?>) value).iterator();
-        }
-        // TODO and so on, and so on...
-        return asList(value).iterator();
+    public DataTraveller(SoutConfiguration configuration) {
+        this.configuration = configuration;
     }
 
-    static void renderValueAsText(Object value, Writer output, SoutConfiguration configuration) throws IOException {
-        if (value == null) {
-            return;
-        }
-        for (TypeHandler typeHandler : configuration.typeHandlers) {
-            if (typeHandler.render(value, output)) {
-                return;
-            }
-        }
-        output.append(value.toString());
-    }
-
-    static Object findValueOf(Object target, String complexName, SoutConfiguration configuration) throws IllegalAccessException {
+    Object findValueOf(Object target, String complexName) throws IllegalAccessException {
         int dotIndex = complexName.indexOf('.');
         if (dotIndex >= 0) {
-            Object nestedValue = simpleFindValueOf(target, complexName.substring(0, dotIndex), configuration);
-            return findValueOf(nestedValue, complexName.substring(dotIndex + 1), configuration);
+            Object nestedValue = simpleFindValueOf(target, complexName.substring(0, dotIndex));
+            return findValueOf(nestedValue, complexName.substring(dotIndex + 1));
         }
-        return simpleFindValueOf(target, complexName, configuration);
+        return simpleFindValueOf(target, complexName);
     }
 
-    private static Object simpleFindValueOf(Object target, String name, SoutConfiguration configuration) throws IllegalAccessException {
+    private Object simpleFindValueOf(Object target, String name) throws IllegalAccessException {
         if (target == null) {
             throw new NullPointerException(String.format("%s not found on null object.", name));
         }

@@ -18,7 +18,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class ExamplesTest {
+public class ExamplesTest {
     @Test
     void specifyTheTemplateDirectlyInAString() throws IOException, IllegalAccessException {
         var configuration = new SoutConfiguration('{', '|', '}', '\\', emptyList(), emptyList());

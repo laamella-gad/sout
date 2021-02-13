@@ -1,6 +1,6 @@
 package com.laamella.sout;
 
-public class TestModel {
+class TestModel {
     final Recurser recurser = new Recurser(1, new Recurser(2, new Recurser(3)));
     final String field = "*field*";
 

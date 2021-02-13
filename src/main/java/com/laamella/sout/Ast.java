@@ -5,7 +5,6 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.laamella.sout.DataTraveller.*;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
 
@@ -29,11 +28,11 @@ class NameNode extends Node {
 
     @Override
     void render(Object data, Writer output, SoutConfiguration configuration) throws IOException, IllegalAccessException {
-        Object value = findValueOf(data, name, configuration);
+        Object value = configuration.dataTraveller.findValueOf(data, name);
         if (value instanceof SoutTemplate) {
             ((SoutTemplate) value).render(data, output);
         } else {
-            renderValueAsText(value, output, configuration);
+            configuration.dataConverter.renderAsText(value, output);
         }
     }
 
@@ -84,7 +83,7 @@ class LoopNode extends ContainerNode {
 
     @Override
     public void render(Object data, Writer output, SoutConfiguration configuration) throws IOException, IllegalAccessException {
-        var listData = valueIterator(findValueOf(data, name, configuration));
+        var listData = configuration.dataConverter.toIterator(configuration.dataTraveller.findValueOf(data, name));
 
         var hasItems = listData.hasNext();
 
