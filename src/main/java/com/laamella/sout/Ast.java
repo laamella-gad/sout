@@ -16,7 +16,7 @@ abstract class Node {
         this.position = position;
     }
 
-    abstract void render(Object data, Writer output) throws IOException, IllegalAccessException;
+    abstract void render(Object data, Writer output, SoutConfiguration configuration) throws IOException, IllegalAccessException;
 }
 
 class NameNode extends Node {
@@ -28,9 +28,8 @@ class NameNode extends Node {
     }
 
     @Override
-    void render(Object data, Writer output) throws IOException, IllegalAccessException {
-        String text = convertValueToText(findValueOf(data, name));
-        output.append(text);
+    void render(Object data, Writer output, SoutConfiguration configuration) throws IOException, IllegalAccessException {
+        renderValueAsText(findValueOf(data, name), output, configuration);
     }
 
     @Override
@@ -79,26 +78,26 @@ class LoopNode extends ContainerNode {
     }
 
     @Override
-    public void render(Object data, Writer output) throws IOException, IllegalAccessException {
+    public void render(Object data, Writer output, SoutConfiguration configuration) throws IOException, IllegalAccessException {
         var listData = valueIterator(findValueOf(data, name));
 
         var hasItems = listData.hasNext();
 
         if (hasItems && leadIn != null) {
-            leadIn.render(data, output);
+            leadIn.render(data, output, configuration);
         }
 
         var printSeparator = false;
         while (listData.hasNext()) {
             var listElement = listData.next();
             if (printSeparator && separatorPart != null) {
-                separatorPart.render(listElement, output);
+                separatorPart.render(listElement, output, configuration);
             }
             printSeparator = true;
-            mainPart.render(listElement, output);
+            mainPart.render(listElement, output, configuration);
         }
         if (hasItems && leadOut != null) {
-            leadOut.render(data, output);
+            leadOut.render(data, output, configuration);
         }
     }
 
@@ -114,9 +113,9 @@ class LoopPartNode extends ContainerNode {
     }
 
     @Override
-    void render(Object data, Writer output) throws IOException, IllegalAccessException {
+    void render(Object data, Writer output, SoutConfiguration configuration) throws IOException, IllegalAccessException {
         for (var child : children) {
-            child.render(data, output);
+            child.render(data, output, configuration);
         }
     }
 
@@ -135,12 +134,30 @@ class TextNode extends Node {
     }
 
     @Override
-    public void render(Object data, Writer output) throws IOException {
+    public void render(Object data, Writer output, SoutConfiguration configuration) throws IOException {
         output.append(text);
     }
 
     @Override
     public String toString() {
         return text;
+    }
+}
+
+class RootNode extends ContainerNode {
+    RootNode() {
+        super(new Position(0, 0));
+    }
+
+    @Override
+    public void render(Object data, Writer output, SoutConfiguration configuration) throws IOException, IllegalAccessException {
+        for (var child : children) {
+            child.render(data, output, configuration);
+        }
+    }
+
+    @Override
+    public String toString() {
+        return children.stream().map(Object::toString).collect(joining());
     }
 }

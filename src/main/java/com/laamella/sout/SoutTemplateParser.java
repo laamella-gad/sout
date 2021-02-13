@@ -9,6 +9,13 @@ class SoutTemplateParser {
     private final int closeChar;
     private final int escapeChar;
 
+    public SoutTemplateParser(SoutConfiguration configuration) {
+        openChar = configuration.openChar;
+        separatorChar = configuration.separatorChar;
+        closeChar = configuration.closeChar;
+        escapeChar = configuration.escapeChar;
+    }
+
     enum State {READING_NAME, READING_TEXT}
 
     static class Context {
@@ -38,15 +45,8 @@ class SoutTemplateParser {
         }
     }
 
-    SoutTemplateParser(char openChar, char separatorChar, char closeChar, char escapeChar) {
-        this.openChar = openChar;
-        this.escapeChar = escapeChar;
-        this.closeChar = closeChar;
-        this.separatorChar = separatorChar;
-    }
-
-    SoutTemplate parse(Reader template) throws IOException {
-        SoutTemplate soutTemplate = new SoutTemplate();
+    RootNode parse(Reader template) throws IOException {
+        RootNode soutTemplate = new RootNode();
         parseContainerNode(soutTemplate, new Context(template));
         return soutTemplate;
     }
@@ -92,7 +92,7 @@ class SoutTemplateParser {
                                 text.append(c);
                             }
                         } else if (c == closeChar) {
-                            if (node instanceof SoutTemplate) {
+                            if (node instanceof RootNode) {
                                 throw new IOException(String.format("Unexpected closing %c at top level.", c));
                             } else {
                                 if (text.isNotEmpty()) {
@@ -134,7 +134,7 @@ class SoutTemplateParser {
         } while (closeChar == separatorChar);
         if (closeChar == -1) {
             // TODO
-            throw new IOException();
+            throw new IOException("End of template while reading a loop.");
         }
     }
 }

@@ -1,5 +1,7 @@
 package com.laamella.sout;
 
+import java.io.IOException;
+import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -30,11 +32,16 @@ class DataTraveller {
         return (Iterator<T>) Arrays.asList(value).iterator();
     }
 
-    static String convertValueToText(Object value) {
+    static void renderValueAsText(Object value, Writer output, SoutConfiguration configuration) throws IOException {
         if (value == null) {
-            return "";
+            return;
         }
-        return value.toString();
+        for (TypeHandler typeHandler : configuration.typeHandlers) {
+            if (typeHandler.render(value, output)) {
+                return;
+            }
+        }
+        output.append(value.toString());
     }
 
     static <T> T findValueOf(Object target, String complexName) throws IllegalAccessException {

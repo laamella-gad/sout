@@ -4,27 +4,23 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 
-import static java.util.stream.Collectors.joining;
+public class SoutTemplate {
+    private final RootNode rootNode;
+    private final SoutConfiguration configuration;
 
-public class SoutTemplate extends ContainerNode {
-    SoutTemplate() {
-        super(new Position(0, 0));
+    private SoutTemplate(RootNode rootNode, SoutConfiguration configuration) {
+        this.rootNode = rootNode;
+        this.configuration = configuration;
     }
 
-    public static SoutTemplate parse(Reader template, char openChar, char separatorChar, char closeChar, char escapeChar) throws IOException {
-        return new SoutTemplateParser(openChar, separatorChar, closeChar, escapeChar).parse(template);
+    public static SoutTemplate parse(Reader template, SoutConfiguration configuration) throws IOException {
+        var parser = new SoutTemplateParser(configuration);
+        var rootNode = parser.parse(template);
+        return new SoutTemplate(rootNode, configuration);
     }
 
-    @Override
     public void render(Object data, Writer output) throws IOException, IllegalAccessException {
-        for (var child : children) {
-            child.render(data, output);
-        }
-    }
-
-    @Override
-    public String toString() {
-        return children.stream().map(Object::toString).collect(joining());
+        rootNode.render(data, output, configuration);
     }
 }
 

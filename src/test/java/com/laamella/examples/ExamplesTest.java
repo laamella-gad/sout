@@ -1,5 +1,6 @@
 package com.laamella.examples;
 
+import com.laamella.sout.SoutConfiguration;
 import com.laamella.sout.SoutTemplate;
 import org.junit.jupiter.api.Test;
 
@@ -9,12 +10,14 @@ import java.io.StringReader;
 import java.io.StringWriter;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ExamplesTest {
     @Test
     void specifyTheTemplateDirectlyInAString() throws IOException, IllegalAccessException {
-        var template = SoutTemplate.parse(new StringReader("Hello {}"), '{', '|', '}', '\\');
+        var configuration = new SoutConfiguration('{', '|', '}', '\\', emptyList(), emptyList());
+        var template = SoutTemplate.parse(new StringReader("Hello {}"), configuration);
         var output = new StringWriter();
         template.render("Piet", output);
         assertEquals("Hello Piet", output.toString());
@@ -24,7 +27,8 @@ class ExamplesTest {
     void loadTheTemplateFromTheClassPath() throws IOException, IllegalAccessException {
         try (var templateInputStream = getClass().getResource("/templates/hello.sout").openStream();
              var reader = new InputStreamReader(templateInputStream, UTF_8)) {
-            var template = SoutTemplate.parse(reader, '<', '|', '>', '\\');
+            var configuration = new SoutConfiguration('<', '|', '>', '\\', emptyList(), emptyList());
+            var template = SoutTemplate.parse(reader, configuration);
             var output = new StringWriter();
             template.render(new Letter("Piet", "Hopscotch inc.", new Item("ball", 14.55), new Item("Triangle", 3.99)), output);
             assertEquals("""
