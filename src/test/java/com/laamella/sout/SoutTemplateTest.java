@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SoutTemplateTest {
     @Test
-    void emptyMainPart() throws IOException {
+    void emptyMainPart() throws IOException, IllegalAccessException {
         var template = parse("Hello {name}, {friends|{} and }uh!");
         var data = ImmutableMap.of(
                 "name", "Piet",
@@ -22,7 +22,7 @@ public class SoutTemplateTest {
     }
 
     @Test
-    void oneElementLoop() throws IOException {
+    void oneElementLoop() throws IOException, IllegalAccessException {
         var template = parse("Hello {name}, {friends|{name} and }uh!");
         var data = ImmutableMap.of(
                 "name", "Piet",
@@ -34,7 +34,7 @@ public class SoutTemplateTest {
     }
 
     @Test
-    void twoElementLoop() throws IOException {
+    void twoElementLoop() throws IOException, IllegalAccessException {
         var template = parse("Hello {name}, {friends|{name}| and }!");
         var data = ImmutableMap.of(
                 "name", "Piet",
@@ -46,7 +46,7 @@ public class SoutTemplateTest {
     }
 
     @Test
-    void fourElementLoop() throws IOException {
+    void fourElementLoop() throws IOException, IllegalAccessException {
         var template = parse("Hello {name}{friends| and your {friendState} friends |{name}| and |! {exclamation}}");
         var data = ImmutableMap.of(
                 "name", "Piet",
@@ -60,7 +60,7 @@ public class SoutTemplateTest {
     }
 
     @Test
-    void nestedName() throws IOException {
+    void nestedName() throws IOException, IllegalAccessException {
         var template = parse("{recurser|{value}} {recurser|{recurser|{value}}} {recurser|{recurser|{recurser|{value}}}}");
         var data = new TestModel();
 
@@ -68,7 +68,7 @@ public class SoutTemplateTest {
     }
 
     @Test
-    void nestedNameWithDots() throws IOException {
+    void nestedNameWithDots() throws IOException, IllegalAccessException {
         var template = parse("{recurser.value} {recurser.recurser.value} {recurser.recurser.recurser.value}");
         var data = new TestModel();
 
@@ -80,12 +80,10 @@ public class SoutTemplateTest {
         return SoutTemplate.parse(new StringReader(template), '{', '|', '}', '\\');
     }
 
-    private void assertRendered(String expected, SoutTemplate template, Object data) throws IOException {
+    private void assertRendered(String expected, SoutTemplate template, Object data) throws IOException, IllegalAccessException {
         var output = new StringWriter();
         template.render(data, output);
         assertEquals(expected, output.toString());
     }
-    // TODO double nesting
-    // TODO escaping
 
 }

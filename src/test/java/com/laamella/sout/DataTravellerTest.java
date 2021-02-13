@@ -39,33 +39,33 @@ class DataTravellerTest {
     }
 
     @Test
-    void findValueOfMapEntry() {
+    void findValueOfMapEntry() throws IllegalAccessException {
         String value = findValueOf(ImmutableMap.of("x", "y"), "x");
         assertThat(value).isEqualTo("y");
     }
 
     @Test
-    void findValueOfFunctionApplication() {
+    void findValueOfFunctionApplication() throws IllegalAccessException {
         String value = findValueOf((Function<String, String>) o -> o + "woo", "name");
         assertThat(value).isEqualTo("namewoo");
     }
 
     @Test
-    void findValueOfField() {
+    void findValueOfField() throws IllegalAccessException {
         TestModel testModel = new TestModel();
         String value = findValueOf(testModel, "field");
         assertThat(value).isEqualTo("*field*");
     }
 
     @Test
-    void findValueOfGetter() {
+    void findValueOfGetter() throws IllegalAccessException {
         TestModel testModel = new TestModel();
         String value = findValueOf(testModel, "getter");
         assertThat(value).isEqualTo("*getter*");
     }
 
     @Test
-    void findValueOfIsser() {
+    void findValueOfIsser() throws IllegalAccessException {
         TestModel testModel = new TestModel();
         boolean value = findValueOf(testModel, "isser");
         assertThat(value).isTrue();

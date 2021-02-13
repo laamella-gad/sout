@@ -9,17 +9,17 @@ import static com.laamella.sout.DataTraveller.*;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
 
-abstract class SoutNode {
+abstract class Node {
     final Position position;
 
-    SoutNode(Position position) {
+    Node(Position position) {
         this.position = position;
     }
 
-    abstract void render(Object data, Writer output) throws IOException;
+    abstract void render(Object data, Writer output) throws IOException, IllegalAccessException;
 }
 
-class NameNode extends SoutNode {
+class NameNode extends Node {
     final String name;
 
     NameNode(String name, Position position) {
@@ -28,7 +28,7 @@ class NameNode extends SoutNode {
     }
 
     @Override
-    void render(Object data, Writer output) throws IOException {
+    void render(Object data, Writer output) throws IOException, IllegalAccessException {
         String text = convertValueToText(findValueOf(data, name));
         output.append(text);
     }
@@ -39,8 +39,8 @@ class NameNode extends SoutNode {
     }
 }
 
-abstract class ContainerNode extends SoutNode {
-    final List<SoutNode> children = new ArrayList<>();
+abstract class ContainerNode extends Node {
+    final List<Node> children = new ArrayList<>();
 
     ContainerNode(Position position) {
         super(position);
@@ -79,7 +79,7 @@ class LoopNode extends ContainerNode {
     }
 
     @Override
-    public void render(Object data, Writer output) throws IOException {
+    public void render(Object data, Writer output) throws IOException, IllegalAccessException {
         var listData = valueIterator(findValueOf(data, name));
 
         var hasItems = listData.hasNext();
@@ -114,7 +114,7 @@ class LoopPartNode extends ContainerNode {
     }
 
     @Override
-    void render(Object data, Writer output) throws IOException {
+    void render(Object data, Writer output) throws IOException, IllegalAccessException {
         for (var child : children) {
             child.render(data, output);
         }
@@ -126,7 +126,7 @@ class LoopPartNode extends ContainerNode {
     }
 }
 
-class TextNode extends SoutNode {
+class TextNode extends Node {
     final String text;
 
     TextNode(String text, Position position) {
