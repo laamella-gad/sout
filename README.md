@@ -6,5 +6,4 @@ Because this one can be learned in five minutes.
 
 ## How to run it
 
-
-
+[Here are two samples.](src/test/java/com/laamella/examples/ExamplesTest.java)
