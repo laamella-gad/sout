@@ -11,51 +11,52 @@ import java.util.stream.Stream;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.laamella.sout.DataTraveller.*;
+import static java.lang.Boolean.TRUE;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class DataTravellerTest {
+
+    private final SoutConfiguration defaultConfiguration = new SoutConfiguration('{', '|', '}', '\\', emptyList(), emptyList());
+
     @Test
     void listsGetConvertedToLists() {
-        List<Integer> objects = newArrayList(valueIterator(asList(1, 2, 3)));
+        var objects = (List<Integer>) newArrayList(valueIterator(asList(1, 2, 3)));
         assertThat(objects).containsExactly(1, 2, 3);
     }
 
     @Test
     void arraysGetConvertedToLists() {
-        List<Integer> objects = newArrayList(valueIterator(new int[]{1, 2, 3}));
+        var objects = (List<Integer>) newArrayList(valueIterator(new int[]{1, 2, 3}));
         assertThat(objects).containsExactly(1, 2, 3);
     }
 
     @Test
     void streamsGetConvertedToLists() {
-        List<Integer> objects = newArrayList(valueIterator(Stream.of(1, 2, 3)));
+        var objects = (List<Integer>) newArrayList(valueIterator(Stream.of(1, 2, 3)));
         assertThat(objects).containsExactly(1, 2, 3);
     }
 
     @Test
     void renderStringToText() throws IOException {
-        var configuration = new SoutConfiguration('{', '|', '}', '\\', emptyList(), emptyList());
         var output = new StringWriter();
-        renderValueAsText("abc", output, configuration);
+        renderValueAsText("abc", output, defaultConfiguration);
         assertThat(output.toString()).isEqualTo("abc");
     }
 
     @Test
     void renderIntToText() throws IOException {
-        var configuration = new SoutConfiguration('{', '|', '}', '\\', emptyList(), emptyList());
         var output = new StringWriter();
-        renderValueAsText(123, output, configuration);
+        renderValueAsText(123, output, defaultConfiguration);
         assertThat(output.toString()).isEqualTo("123");
     }
 
     @Test
     void renderNullToText() throws IOException {
-        var configuration = new SoutConfiguration('{', '|', '}', '\\', emptyList(), emptyList());
         var output = new StringWriter();
-        renderValueAsText(null, output, configuration);
+        renderValueAsText(null, output, defaultConfiguration);
         assertThat(output.toString()).isEqualTo("");
     }
 
@@ -75,34 +76,48 @@ class DataTravellerTest {
 
     @Test
     void findValueOfMapEntry() throws IllegalAccessException {
-        String value = findValueOf(ImmutableMap.of("x", "y"), "x");
+        Object value = findValueOf(ImmutableMap.of("x", "y"), "x", defaultConfiguration);
         assertThat(value).isEqualTo("y");
     }
 
     @Test
     void findValueOfFunctionApplication() throws IllegalAccessException {
-        String value = findValueOf((Function<String, String>) o -> o + "woo", "name");
+        Object value = findValueOf((Function<String, String>) o -> o + "woo", "name", defaultConfiguration);
         assertThat(value).isEqualTo("namewoo");
     }
 
     @Test
     void findValueOfField() throws IllegalAccessException {
         TestModel testModel = new TestModel();
-        String value = findValueOf(testModel, "field");
+        Object value = findValueOf(testModel, "field", defaultConfiguration);
         assertThat(value).isEqualTo("*field*");
     }
 
     @Test
     void findValueOfGetter() throws IllegalAccessException {
         TestModel testModel = new TestModel();
-        String value = findValueOf(testModel, "getter");
+        Object value = findValueOf(testModel, "getter", defaultConfiguration);
         assertThat(value).isEqualTo("*getter*");
     }
 
     @Test
     void findValueOfIsser() throws IllegalAccessException {
         TestModel testModel = new TestModel();
-        boolean value = findValueOf(testModel, "isser");
-        assertThat(value).isTrue();
+        Object value = findValueOf(testModel, "isser", defaultConfiguration);
+        assertThat(value).isEqualTo(TRUE);
+    }
+
+    @Test
+    void findCustomValue() throws IllegalAccessException {
+        NameResolver hrankResolver = (target, name) -> {
+            if (name.equals("hrank")) {
+                return "vavoom";
+            }
+            return null;
+        };
+        var configuration = new SoutConfiguration('{', '|', '}', '\\', singletonList(hrankResolver), emptyList());
+        TestModel testModel = new TestModel();
+        Object value = findValueOf(testModel, "hrank", configuration);
+        assertThat(value).isEqualTo("vavoom");
     }
 }

@@ -29,7 +29,12 @@ class NameNode extends Node {
 
     @Override
     void render(Object data, Writer output, SoutConfiguration configuration) throws IOException, IllegalAccessException {
-        renderValueAsText(findValueOf(data, name), output, configuration);
+        Object value = findValueOf(data, name, configuration);
+        if (value instanceof SoutTemplate) {
+            ((SoutTemplate) value).render(data, output);
+        } else {
+            renderValueAsText(value, output, configuration);
+        }
     }
 
     @Override
@@ -79,7 +84,7 @@ class LoopNode extends ContainerNode {
 
     @Override
     public void render(Object data, Writer output, SoutConfiguration configuration) throws IOException, IllegalAccessException {
-        var listData = valueIterator(findValueOf(data, name));
+        var listData = valueIterator(findValueOf(data, name, configuration));
 
         var hasItems = listData.hasNext();
 

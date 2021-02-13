@@ -3,33 +3,33 @@ package com.laamella.sout;
 import java.io.IOException;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 
 class DataTraveller {
 
-    static <T> Iterator<T> valueIterator(Object value) {
+    static Iterator<?> valueIterator(Object value) {
         if (value instanceof List) {
-            return ((List<T>) value).iterator();
+            return ((List<?>) value).iterator();
         } else if (value instanceof Object[]) {
-            return stream((T[]) value).iterator();
+            return stream((Object[]) value).iterator();
         } else if (value instanceof int[]) {
-            return (Iterator<T>) stream((int[]) value).boxed().iterator();
+            return stream((int[]) value).boxed().iterator();
         } else if (value instanceof Stream) {
-            return (Iterator<T>) ((Stream<?>) value).iterator();
+            return ((Stream<?>) value).iterator();
         } else if (value instanceof Iterator) {
-            return (Iterator<T>) value;
+            return (Iterator<?>) value;
         } else if (value instanceof Iterable) {
-            return ((Iterable<T>) value).iterator();
+            return ((Iterable<?>) value).iterator();
         }
         // TODO and so on, and so on...
-        return (Iterator<T>) Arrays.asList(value).iterator();
+        return asList(value).iterator();
     }
 
     static void renderValueAsText(Object value, Writer output, SoutConfiguration configuration) throws IOException {
@@ -44,48 +44,55 @@ class DataTraveller {
         output.append(value.toString());
     }
 
-    static <T> T findValueOf(Object target, String complexName) throws IllegalAccessException {
+    static Object findValueOf(Object target, String complexName, SoutConfiguration configuration) throws IllegalAccessException {
         int dotIndex = complexName.indexOf('.');
         if (dotIndex >= 0) {
-            Object nestedValue = simpleFindValueOf(target, complexName.substring(0, dotIndex));
-            return findValueOf(nestedValue, complexName.substring(dotIndex + 1));
+            Object nestedValue = simpleFindValueOf(target, complexName.substring(0, dotIndex), configuration);
+            return findValueOf(nestedValue, complexName.substring(dotIndex + 1), configuration);
         }
-        return simpleFindValueOf(target, complexName);
+        return simpleFindValueOf(target, complexName, configuration);
     }
 
-    private static <T> T simpleFindValueOf(Object target, String name) throws IllegalAccessException {
+    private static Object simpleFindValueOf(Object target, String name, SoutConfiguration configuration) throws IllegalAccessException {
         if (target == null) {
             throw new NullPointerException(String.format("%s not found on null object.", name));
         }
         // If the name is empty, the value is the target itself.
         if (name.isBlank()) {
-            return (T) target;
+            return target;
+        }
+        // See if there is a custom resolver to handle the name.
+        for (NameResolver nameResolver : configuration.nameResolvers) {
+            Object value = nameResolver.resolve(target, name);
+            if (value != null) {
+                return value;
+            }
         }
         // Find name in the keys of a map.
         if (target instanceof Map) {
-            Map<String, Object> map = (Map<String, Object>) target;
-            Object value = map.get(name);
+            var map = (Map<String, Object>) target;
+            var value = map.get(name);
             if (value == null) {
                 throw new IllegalArgumentException(String.format("%s not found in map %s", name, target));
             }
-            return (T) value;
+            return value;
         }
         // Find value by applying the target function to the key.
         if (target instanceof Function) {
-            return ((Function<Object, T>) target).apply(name);
+            return ((Function<Object, Object>) target).apply(name);
         }
         // Find the value of a field called name.
-        T fieldValue = getFieldValue(target, target.getClass(), name);
+        var fieldValue = getFieldValue(target, target.getClass(), name);
         if (fieldValue != null) {
             return fieldValue;
         }
         // Get the value from getName()
-        T getterValue = getMethodValue(target, target.getClass(), "get" + capitalize(name));
+        var getterValue = getMethodValue(target, target.getClass(), "get" + capitalize(name));
         if (getterValue != null) {
             return getterValue;
         }
         // Get the value from isName()
-        T isserValue = getMethodValue(target, target.getClass(), "is" + capitalize(name));
+        var isserValue = getMethodValue(target, target.getClass(), "is" + capitalize(name));
         if (isserValue != null) {
             return isserValue;
         }
@@ -97,11 +104,11 @@ class DataTraveller {
         return s.substring(0, 1).toUpperCase() + s.substring(1);
     }
 
-    static <T> T getFieldValue(Object target, Class<?> type, String fieldName) throws IllegalAccessException {
+    static Object getFieldValue(Object target, Class<?> type, String fieldName) throws IllegalAccessException {
         try {
             var field = type.getDeclaredField(fieldName);
             field.setAccessible(true);
-            return (T) field.get(target);
+            return field.get(target);
         } catch (NoSuchFieldException e) {
             // go on
         }
@@ -113,11 +120,11 @@ class DataTraveller {
         return getFieldValue(target, superclass, fieldName);
     }
 
-    static <T> T getMethodValue(Object target, Class<?> type, String fieldName) throws IllegalAccessException {
+    static Object getMethodValue(Object target, Class<?> type, String fieldName) throws IllegalAccessException {
         try {
             var method = type.getDeclaredMethod(fieldName);
             method.setAccessible(true);
-            return (T) method.invoke(target);
+            return method.invoke(target);
         } catch (NoSuchMethodException | InvocationTargetException e) {
             // go on
         }

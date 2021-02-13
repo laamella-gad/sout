@@ -2,5 +2,5 @@ package com.laamella.sout;
 
 @FunctionalInterface
 public interface NameResolver {
-    void resolve(String name);
+    Object resolve(Object target, String name);
 }
