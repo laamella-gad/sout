@@ -76,6 +76,30 @@ public class SoutTemplateTest {
         assertRendered("1 2 3", template, data);
     }
 
+    @Test
+    void escapeOpeningBrace() throws IOException, IllegalAccessException {
+        assertRendered("...{...", parse("...\\{..."), null);
+    }
+
+    @Test
+    void escapeClosingBrace() throws IOException, IllegalAccessException {
+        assertRendered("...}...", parse("...\\}..."), null);
+    }
+
+    @Test
+    void escapeSeparator() throws IOException, IllegalAccessException {
+        assertRendered("...|...", parse("...\\|..."), null);
+    }
+
+    @Test
+    void escapeEscape() throws IOException, IllegalAccessException {
+        assertRendered("...\\...", parse("...\\\\..."), null);
+    }
+
+    @Test
+    void escapeNonEscapable() throws IOException, IllegalAccessException {
+        assertRendered("...\\s...", parse("...\\s..."), null);
+    }
 
     private SoutTemplate parse(String template) throws IOException {
         var configuration = new SoutConfiguration('{', '|', '}', '\\', emptyList(), emptyList());
