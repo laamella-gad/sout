@@ -22,5 +22,10 @@ public class SoutTemplate {
     public void render(Object data, Writer output) throws IOException, IllegalAccessException {
         rootNode.render(data, output, configuration);
     }
+
+    @Override
+    public String toString() {
+        return rootNode.toString();
+    }
 }
 

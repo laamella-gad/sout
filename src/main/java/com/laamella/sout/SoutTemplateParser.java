@@ -128,12 +128,11 @@ class SoutTemplateParser {
     private void parseLoopNode(LoopNode loopNode, Context context) throws IOException {
         int closeChar;
         do {
-            LoopPartNode rootNode = new LoopPartNode(context.lastPosition());
-            loopNode.children.add(rootNode);
-            closeChar = parseContainerNode(rootNode, context);
+            var loopPartNode = new LoopPartNode(context.lastPosition());
+            loopNode.children.add(loopPartNode);
+            closeChar = parseContainerNode(loopPartNode, context);
         } while (closeChar == separatorChar);
         if (closeChar == -1) {
-            // TODO
             throw new IOException("End of template while reading a loop.");
         }
     }

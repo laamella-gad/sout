@@ -1,6 +1,9 @@
 package com.laamella.sout;
 
-class TextBuffer {
+/**
+ * Simple wrapper around StringBuilder to make the parser's life easier.
+ */
+final class TextBuffer {
     private final StringBuilder stringBuilder = new StringBuilder();
 
     boolean isNotEmpty() {
@@ -8,7 +11,7 @@ class TextBuffer {
     }
 
     void append(int c) {
-        stringBuilder.append((char)c);
+        stringBuilder.append((char) c);
     }
 
     String consume(){

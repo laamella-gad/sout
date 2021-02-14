@@ -16,34 +16,34 @@ class DataConverter {
         this.configuration = configuration;
     }
 
-    Iterator<?> toIterator(Object value) {
-        if (value instanceof List) {
-            return ((List<?>) value).iterator();
-        } else if (value instanceof Object[]) {
-            return stream((Object[]) value).iterator();
-        } else if (value instanceof int[]) {
-            return stream((int[]) value).boxed().iterator();
-        } else if (value instanceof Stream) {
-            return ((Stream<?>) value).iterator();
-        } else if (value instanceof Iterator) {
-            return (Iterator<?>) value;
-        } else if (value instanceof Iterable) {
-            return ((Iterable<?>) value).iterator();
+    Iterator<?> toIterator(Object model) {
+        if (model instanceof List) {
+            return ((List<?>) model).iterator();
+        } else if (model instanceof Object[]) {
+            return stream((Object[]) model).iterator();
+        } else if (model instanceof int[]) {
+            return stream((int[]) model).boxed().iterator();
+        } else if (model instanceof Stream) {
+            return ((Stream<?>) model).iterator();
+        } else if (model instanceof Iterator) {
+            return (Iterator<?>) model;
+        } else if (model instanceof Iterable) {
+            return ((Iterable<?>) model).iterator();
         }
         // TODO and so on, and so on...
-        return singletonList(value).iterator();
+        return singletonList(model).iterator();
     }
 
-    void renderAsText(Object value, Writer output) throws IOException, IllegalAccessException {
-        if (value == null) {
+    void renderAsText(Object model, Writer writer) throws IOException, IllegalAccessException {
+        if (model == null) {
             return;
         }
-        for (TypeHandler typeHandler : configuration.typeHandlers) {
-            if (typeHandler.render(value, output)) {
+        for (TypeRenderer typeRenderer : configuration.typeRenderers) {
+            if (typeRenderer.write(model, writer)) {
                 return;
             }
         }
-        output.append(value.toString());
+        writer.append(model.toString());
     }
 
 }

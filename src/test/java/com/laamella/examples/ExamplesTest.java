@@ -1,10 +1,10 @@
 package com.laamella.examples;
 
 import com.google.common.collect.ImmutableMap;
-import com.laamella.sout.NameHandler;
+import com.laamella.sout.NameRenderer;
 import com.laamella.sout.SoutConfiguration;
 import com.laamella.sout.SoutTemplate;
-import com.laamella.sout.TypeHandler;
+import com.laamella.sout.TypeRenderer;
 import org.junit.jupiter.api.Test;
 
 import java.io.*;
@@ -51,11 +51,11 @@ public class ExamplesTest {
 
     @Test
     public void useACustomDateFormatter() throws IOException, IllegalAccessException {
-        var customDateHandler = new TypeHandler() {
+        var customDateHandler = new TypeRenderer() {
             @Override
-            public boolean render(Object value, Writer output) throws IOException {
-                if (value instanceof Date) {
-                    String formattedDate = new SimpleDateFormat("dd-MM-yyyy").format((Date) value);
+            public boolean write(Object model, Writer output) throws IOException {
+                if (model instanceof Date) {
+                    String formattedDate = new SimpleDateFormat("dd-MM-yyyy").format((Date) model);
                     output.write(formattedDate);
                     return true;
                 }
@@ -73,14 +73,14 @@ public class ExamplesTest {
     @Test
     public void useNameResolverToForwardToAnotherTemplate() throws IOException, IllegalAccessException {
         // The TemplateResolver stores a map of name->template.
-        var templateResolver = new TemplateHandler();
+        var templateResolver = new TemplateRenderer();
         var configuration = new SoutConfiguration('{', '|', '}', '\\', singletonList(templateResolver), emptyList());
 
         // Put one template in the resolver, named "oei".
         var templateToResolve = SoutTemplate.read(new StringReader("oei {name} oeiii"), configuration);
         templateResolver.put("oei", templateToResolve);
 
-        // The name oei should be resolved to the template.
+        // The name oei should trigger the TemplateWriter to render the template to the output.
         var template = SoutTemplate.read(new StringReader("Hello {oei}"), configuration);
         var output = new StringWriter();
         template.render(ImmutableMap.of("name", "Piet"), output);
@@ -96,7 +96,7 @@ public class ExamplesTest {
  * this will return the corresponding "sub"template,
  * and that will be rendered.
  */
-class TemplateHandler implements NameHandler {
+class TemplateRenderer implements NameRenderer {
     private final Map<String, SoutTemplate> templates = new HashMap<>();
 
     public void put(String name, SoutTemplate template) {

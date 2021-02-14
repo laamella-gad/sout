@@ -8,6 +8,7 @@ import java.util.List;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
 
+
 abstract class Node {
     final Position position;
 
@@ -28,12 +29,12 @@ class NameNode extends Node {
 
     @Override
     void render(Object data, Writer output, SoutConfiguration configuration) throws IOException, IllegalAccessException {
-        for (NameHandler nameHandler : configuration.nameHandlers) {
-            if (nameHandler.render(data, name, output)) {
+        for (NameRenderer nameRenderer : configuration.nameRenderers) {
+            if (nameRenderer.render(data, name, output)) {
                 return;
             }
         }
-        Object value = configuration.dataTraveller.evaluateNameOnTarget(data, name);
+        Object value = configuration.modelTraveller.evaluateNameOnModel(data, name);
         configuration.dataConverter.renderAsText(value, output);
     }
 
@@ -84,7 +85,7 @@ class LoopNode extends ContainerNode {
 
     @Override
     public void render(Object data, Writer output, SoutConfiguration configuration) throws IOException, IllegalAccessException {
-        var listData = configuration.dataConverter.toIterator(configuration.dataTraveller.evaluateNameOnTarget(data, name));
+        var listData = configuration.dataConverter.toIterator(configuration.modelTraveller.evaluateNameOnModel(data, name));
 
         var hasItems = listData.hasNext();
 

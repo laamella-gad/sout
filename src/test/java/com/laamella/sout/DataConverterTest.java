@@ -58,14 +58,14 @@ public class DataConverterTest {
 
     @Test
     public void specialRenderer() throws IOException, IllegalAccessException {
-        TypeHandler specialTypeHandler = (value, output) -> {
+        TypeRenderer specialTypeRenderer = (value, output) -> {
             if (value instanceof Integer) {
                 output.append("INT");
                 return true;
             }
             return false;
         };
-        var configuration = new SoutConfiguration('{', '|', '}', '\\', emptyList(), singletonList(specialTypeHandler));
+        var configuration = new SoutConfiguration('{', '|', '}', '\\', emptyList(), singletonList(specialTypeRenderer));
         var output = new StringWriter();
         new DataConverter(configuration).renderAsText(123, output);
         assertThat(output.toString()).isEqualTo("INT");

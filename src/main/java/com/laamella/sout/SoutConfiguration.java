@@ -3,24 +3,27 @@ package com.laamella.sout;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Everything that is configurable.
+ */
 public class SoutConfiguration {
     final char openChar;
     final char escapeChar;
     final char closeChar;
     final char separatorChar;
-    final List<NameHandler> nameHandlers;
-    final List<TypeHandler> typeHandlers;
+    final List<NameRenderer> nameRenderers;
+    final List<TypeRenderer> typeRenderers;
     final DataConverter dataConverter;
-    final DataTraveller dataTraveller;
+    final ModelTraveller modelTraveller;
 
-    public SoutConfiguration(char openChar, char separatorChar, char closeChar, char escapeChar, List<NameHandler> nameHandlers, List<TypeHandler> typeHandlers) {
+    public SoutConfiguration(char openChar, char separatorChar, char closeChar, char escapeChar, List<NameRenderer> nameRenderers, List<TypeRenderer> typeRenderers) {
         this.openChar = openChar;
         this.escapeChar = escapeChar;
         this.closeChar = closeChar;
         this.separatorChar = separatorChar;
-        this.nameHandlers = new ArrayList<>(nameHandlers);
-        this.typeHandlers = new ArrayList<>(typeHandlers);
+        this.nameRenderers = new ArrayList<>(nameRenderers);
+        this.typeRenderers = new ArrayList<>(typeRenderers);
         dataConverter = new DataConverter(this);
-        dataTraveller = new DataTraveller(this);
+        modelTraveller = new ModelTraveller();
     }
 }

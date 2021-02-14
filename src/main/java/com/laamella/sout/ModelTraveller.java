@@ -4,23 +4,21 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.function.Function;
 
-class DataTraveller {
-    private final SoutConfiguration configuration;
+/**
+ * Tries to go from object to object by evaluating names to fields, getters, maps, ...
+ */
+class ModelTraveller {
 
-    public DataTraveller(SoutConfiguration configuration) {
-        this.configuration = configuration;
-    }
-
-    Object evaluateNameOnTarget(Object target, String complexName) throws IllegalAccessException {
+    Object evaluateNameOnModel(Object model, String complexName) throws IllegalAccessException {
         int dotIndex = complexName.indexOf('.');
         if (dotIndex >= 0) {
-            Object nestedValue = simpleFindValueOf(target, complexName.substring(0, dotIndex));
-            return evaluateNameOnTarget(nestedValue, complexName.substring(dotIndex + 1));
+            Object nestedValue = innerEvaluateNameOnModel(model, complexName.substring(0, dotIndex));
+            return evaluateNameOnModel(nestedValue, complexName.substring(dotIndex + 1));
         }
-        return simpleFindValueOf(target, complexName);
+        return innerEvaluateNameOnModel(model, complexName);
     }
 
-    private Object simpleFindValueOf(Object target, String name) throws IllegalAccessException {
+    private Object innerEvaluateNameOnModel(Object target, String name) throws IllegalAccessException {
         if (target == null) {
             throw new NullPointerException(String.format("%s not found on null object.", name));
         }
