@@ -1,7 +1,7 @@
 package com.laamella.examples;
 
 import com.google.common.collect.ImmutableMap;
-import com.laamella.sout.NameResolver;
+import com.laamella.sout.NameHandler;
 import com.laamella.sout.SoutConfiguration;
 import com.laamella.sout.SoutTemplate;
 import com.laamella.sout.TypeHandler;
@@ -73,7 +73,7 @@ public class ExamplesTest {
     @Test
     public void useNameResolverToForwardToAnotherTemplate() throws IOException, IllegalAccessException {
         // The TemplateResolver stores a map of name->template.
-        var templateResolver = new TemplateResolver();
+        var templateResolver = new TemplateHandler();
         var configuration = new SoutConfiguration('{', '|', '}', '\\', singletonList(templateResolver), emptyList());
 
         // Put one template in the resolver, named "oei".
@@ -96,16 +96,21 @@ public class ExamplesTest {
  * this will return the corresponding "sub"template,
  * and that will be rendered.
  */
-class TemplateResolver implements NameResolver {
+class TemplateHandler implements NameHandler {
     private final Map<String, SoutTemplate> templates = new HashMap<>();
-
-    @Override
-    public Object resolve(Object target, String name) {
-        return templates.get(name);
-    }
 
     public void put(String name, SoutTemplate template) {
         templates.put(name, template);
+    }
+
+    @Override
+    public boolean render(Object model, String name, Writer output) throws IOException, IllegalAccessException {
+        SoutTemplate template = templates.get(name);
+        if (template == null) {
+            return false;
+        }
+        template.render(model, output);
+        return true;
     }
 }
 

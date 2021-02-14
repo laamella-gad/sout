@@ -101,12 +101,6 @@ public class SoutTemplateTest {
         assertRendered("...\\s...", parse("...\\s..."), null);
     }
 
-    @Test
-    public void renderCustomRenderable() throws IllegalAccessException, IOException {
-        SoutTemplate template = parse("rrr{renderable}rrr");
-        assertRendered("rrr<<<RENDERABLE on class TestModel>>>rrr", template, new TestModel());
-    }
-
     private SoutTemplate parse(String template) throws IOException {
         var configuration = new SoutConfiguration('{', '|', '}', '\\', emptyList(), emptyList());
         return SoutTemplate.read(new StringReader(template), configuration);

@@ -36,28 +36,28 @@ public class DataConverterTest {
     }
 
     @Test
-    public void renderStringToText() throws IOException {
+    public void renderStringToText() throws IOException, IllegalAccessException {
         var output = new StringWriter();
         dataConverter.renderAsText("abc", output);
         assertThat(output.toString()).isEqualTo("abc");
     }
 
     @Test
-    public void renderIntToText() throws IOException {
+    public void renderIntToText() throws IOException, IllegalAccessException {
         var output = new StringWriter();
         dataConverter.renderAsText(123, output);
         assertThat(output.toString()).isEqualTo("123");
     }
 
     @Test
-    public void renderNullToText() throws IOException {
+    public void renderNullToText() throws IOException, IllegalAccessException {
         var output = new StringWriter();
         dataConverter.renderAsText(null, output);
         assertThat(output.toString()).isEqualTo("");
     }
 
     @Test
-    public void specialRenderer() throws IOException {
+    public void specialRenderer() throws IOException, IllegalAccessException {
         TypeHandler specialTypeHandler = (value, output) -> {
             if (value instanceof Integer) {
                 output.append("INT");

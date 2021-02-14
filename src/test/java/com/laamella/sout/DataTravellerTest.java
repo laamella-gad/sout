@@ -7,7 +7,6 @@ import java.util.function.Function;
 
 import static java.lang.Boolean.TRUE;
 import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class DataTravellerTest {
@@ -17,55 +16,34 @@ public class DataTravellerTest {
 
     @Test
     public void findValueOfMapEntry() throws IllegalAccessException {
-        Object value = dataTraveller.findValueOf(ImmutableMap.of("x", "y"), "x");
+        Object value = dataTraveller.evaluateNameOnTarget(ImmutableMap.of("x", "y"), "x");
         assertThat(value).isEqualTo("y");
     }
 
     @Test
     public void findValueOfFunctionApplication() throws IllegalAccessException {
-        Object value = dataTraveller.findValueOf((Function<String, String>) o -> o + "woo", "name");
+        Object value = dataTraveller.evaluateNameOnTarget((Function<String, String>) o -> o + "woo", "name");
         assertThat(value).isEqualTo("namewoo");
     }
 
     @Test
     public void findValueOfField() throws IllegalAccessException {
         TestModel testModel = new TestModel();
-        Object value = dataTraveller.findValueOf(testModel, "field");
+        Object value = dataTraveller.evaluateNameOnTarget(testModel, "field");
         assertThat(value).isEqualTo("*field*");
     }
 
     @Test
     public void findValueOfGetter() throws IllegalAccessException {
         TestModel testModel = new TestModel();
-        Object value = dataTraveller.findValueOf(testModel, "getter");
+        Object value = dataTraveller.evaluateNameOnTarget(testModel, "getter");
         assertThat(value).isEqualTo("*getter*");
     }
 
     @Test
     public void findValueOfIsser() throws IllegalAccessException {
         TestModel testModel = new TestModel();
-        Object value = dataTraveller.findValueOf(testModel, "isser");
+        Object value = dataTraveller.evaluateNameOnTarget(testModel, "isser");
         assertThat(value).isEqualTo(TRUE);
-    }
-
-    @Test
-    public void findValueOfRenderable() throws IllegalAccessException {
-        TestModel testModel = new TestModel();
-        Object value = dataTraveller.findValueOf(testModel, "renderable");
-        assertThat(value).isInstanceOf(Renderable.class);
-    }
-
-    @Test
-    public void findCustomValue() throws IllegalAccessException {
-        NameResolver hrankResolver = (target, name) -> {
-            if (name.equals("hrank")) {
-                return "vavoom";
-            }
-            return null;
-        };
-        var configuration = new SoutConfiguration('{', '|', '}', '\\', singletonList(hrankResolver), emptyList());
-        TestModel testModel = new TestModel();
-        Object value = new DataTraveller(configuration).findValueOf(testModel, "hrank");
-        assertThat(value).isEqualTo("vavoom");
     }
 }

@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 
-public class SoutTemplate implements Renderable {
+public class SoutTemplate {
     private final RootNode rootNode;
     private final SoutConfiguration configuration;
 
@@ -19,7 +19,6 @@ public class SoutTemplate implements Renderable {
         return new SoutTemplate(rootNode, configuration);
     }
 
-    @Override
     public void render(Object data, Writer output) throws IOException, IllegalAccessException {
         rootNode.render(data, output, configuration);
     }

@@ -8,17 +8,17 @@ public class SoutConfiguration {
     final char escapeChar;
     final char closeChar;
     final char separatorChar;
-    final List<NameResolver> nameResolvers;
+    final List<NameHandler> nameHandlers;
     final List<TypeHandler> typeHandlers;
     final DataConverter dataConverter;
     final DataTraveller dataTraveller;
 
-    public SoutConfiguration(char openChar, char separatorChar, char closeChar, char escapeChar, List<NameResolver> nameResolvers, List<TypeHandler> typeHandlers) {
+    public SoutConfiguration(char openChar, char separatorChar, char closeChar, char escapeChar, List<NameHandler> nameHandlers, List<TypeHandler> typeHandlers) {
         this.openChar = openChar;
         this.escapeChar = escapeChar;
         this.closeChar = closeChar;
         this.separatorChar = separatorChar;
-        this.nameResolvers = new ArrayList<>(nameResolvers);
+        this.nameHandlers = new ArrayList<>(nameHandlers);
         this.typeHandlers = new ArrayList<>(typeHandlers);
         dataConverter = new DataConverter(this);
         dataTraveller = new DataTraveller(this);

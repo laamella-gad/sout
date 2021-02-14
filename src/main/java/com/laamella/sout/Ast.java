@@ -28,12 +28,13 @@ class NameNode extends Node {
 
     @Override
     void render(Object data, Writer output, SoutConfiguration configuration) throws IOException, IllegalAccessException {
-        Object value = configuration.dataTraveller.findValueOf(data, name);
-        if (value instanceof Renderable) {
-            ((Renderable) value).render(data, output);
-        } else {
-            configuration.dataConverter.renderAsText(value, output);
+        for (NameHandler nameHandler : configuration.nameHandlers) {
+            if (nameHandler.render(data, name, output)) {
+                return;
+            }
         }
+        Object value = configuration.dataTraveller.evaluateNameOnTarget(data, name);
+        configuration.dataConverter.renderAsText(value, output);
     }
 
     @Override
@@ -83,7 +84,7 @@ class LoopNode extends ContainerNode {
 
     @Override
     public void render(Object data, Writer output, SoutConfiguration configuration) throws IOException, IllegalAccessException {
-        var listData = configuration.dataConverter.toIterator(configuration.dataTraveller.findValueOf(data, name));
+        var listData = configuration.dataConverter.toIterator(configuration.dataTraveller.evaluateNameOnTarget(data, name));
 
         var hasItems = listData.hasNext();
 

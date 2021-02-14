@@ -6,8 +6,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
+import static java.util.Collections.singletonList;
 
 class DataConverter {
     private final SoutConfiguration configuration;
@@ -31,10 +31,10 @@ class DataConverter {
             return ((Iterable<?>) value).iterator();
         }
         // TODO and so on, and so on...
-        return asList(value).iterator();
+        return singletonList(value).iterator();
     }
 
-    void renderAsText(Object value, Writer output) throws IOException {
+    void renderAsText(Object value, Writer output) throws IOException, IllegalAccessException {
         if (value == null) {
             return;
         }

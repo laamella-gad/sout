@@ -11,11 +11,11 @@ class DataTraveller {
         this.configuration = configuration;
     }
 
-    Object findValueOf(Object target, String complexName) throws IllegalAccessException {
+    Object evaluateNameOnTarget(Object target, String complexName) throws IllegalAccessException {
         int dotIndex = complexName.indexOf('.');
         if (dotIndex >= 0) {
             Object nestedValue = simpleFindValueOf(target, complexName.substring(0, dotIndex));
-            return findValueOf(nestedValue, complexName.substring(dotIndex + 1));
+            return evaluateNameOnTarget(nestedValue, complexName.substring(dotIndex + 1));
         }
         return simpleFindValueOf(target, complexName);
     }
@@ -27,13 +27,6 @@ class DataTraveller {
         // If the name is empty, the value is the target itself.
         if (name.isBlank()) {
             return target;
-        }
-        // See if there is a custom resolver to handle the name.
-        for (NameResolver nameResolver : configuration.nameResolvers) {
-            Object value = nameResolver.resolve(target, name);
-            if (value != null) {
-                return value;
-            }
         }
         // Find name in the keys of a map.
         if (target instanceof Map) {
