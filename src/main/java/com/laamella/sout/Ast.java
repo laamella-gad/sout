@@ -29,8 +29,8 @@ class NameNode extends Node {
     @Override
     void render(Object data, Writer output, SoutConfiguration configuration) throws IOException, IllegalAccessException {
         Object value = configuration.dataTraveller.findValueOf(data, name);
-        if (value instanceof SoutTemplate) {
-            ((SoutTemplate) value).render(data, output);
+        if (value instanceof Renderable) {
+            ((Renderable) value).render(data, output);
         } else {
             configuration.dataConverter.renderAsText(value, output);
         }

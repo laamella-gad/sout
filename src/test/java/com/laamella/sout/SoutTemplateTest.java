@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SoutTemplateTest {
     @Test
-    void emptyMainPart() throws IOException, IllegalAccessException {
+    public void emptyMainPart() throws IOException, IllegalAccessException {
         var template = parse("Hello {name}, {friends|{} and }uh!");
         var data = ImmutableMap.of(
                 "name", "Piet",
@@ -23,7 +23,7 @@ public class SoutTemplateTest {
     }
 
     @Test
-    void oneElementLoop() throws IOException, IllegalAccessException {
+    public void oneElementLoop() throws IOException, IllegalAccessException {
         var template = parse("Hello {name}, {friends|{name} and }uh!");
         var data = ImmutableMap.of(
                 "name", "Piet",
@@ -35,7 +35,7 @@ public class SoutTemplateTest {
     }
 
     @Test
-    void twoElementLoop() throws IOException, IllegalAccessException {
+    public void twoElementLoop() throws IOException, IllegalAccessException {
         var template = parse("Hello {name}, {friends|{name}| and }!");
         var data = ImmutableMap.of(
                 "name", "Piet",
@@ -47,7 +47,7 @@ public class SoutTemplateTest {
     }
 
     @Test
-    void fourElementLoop() throws IOException, IllegalAccessException {
+    public void fourElementLoop() throws IOException, IllegalAccessException {
         var template = parse("Hello {name}{friends| and your {friendState} friends |{name}| and |! {exclamation}}");
         var data = ImmutableMap.of(
                 "name", "Piet",
@@ -61,7 +61,7 @@ public class SoutTemplateTest {
     }
 
     @Test
-    void nestedName() throws IOException, IllegalAccessException {
+    public void nestedName() throws IOException, IllegalAccessException {
         var template = parse("{recurser|{value}} {recurser|{recurser|{value}}} {recurser|{recurser|{recurser|{value}}}}");
         var data = new TestModel();
 
@@ -69,7 +69,7 @@ public class SoutTemplateTest {
     }
 
     @Test
-    void nestedNameWithDots() throws IOException, IllegalAccessException {
+    public void nestedNameWithDots() throws IOException, IllegalAccessException {
         var template = parse("{recurser.value} {recurser.recurser.value} {recurser.recurser.recurser.value}");
         var data = new TestModel();
 
@@ -77,33 +77,39 @@ public class SoutTemplateTest {
     }
 
     @Test
-    void escapeOpeningBrace() throws IOException, IllegalAccessException {
+    public void escapeOpeningBrace() throws IOException, IllegalAccessException {
         assertRendered("...{...", parse("...\\{..."), null);
     }
 
     @Test
-    void escapeClosingBrace() throws IOException, IllegalAccessException {
+    public void escapeClosingBrace() throws IOException, IllegalAccessException {
         assertRendered("...}...", parse("...\\}..."), null);
     }
 
     @Test
-    void escapeSeparator() throws IOException, IllegalAccessException {
+    public void escapeSeparator() throws IOException, IllegalAccessException {
         assertRendered("...|...", parse("...\\|..."), null);
     }
 
     @Test
-    void escapeEscape() throws IOException, IllegalAccessException {
+    public void escapeEscape() throws IOException, IllegalAccessException {
         assertRendered("...\\...", parse("...\\\\..."), null);
     }
 
     @Test
-    void escapeNonEscapable() throws IOException, IllegalAccessException {
+    public void escapeNonEscapable() throws IOException, IllegalAccessException {
         assertRendered("...\\s...", parse("...\\s..."), null);
+    }
+
+    @Test
+    public void renderCustomRenderable() throws IllegalAccessException, IOException {
+        SoutTemplate template = parse("rrr{renderable}rrr");
+        assertRendered("rrr<<<RENDERABLE on class TestModel>>>rrr", template, new TestModel());
     }
 
     private SoutTemplate parse(String template) throws IOException {
         var configuration = new SoutConfiguration('{', '|', '}', '\\', emptyList(), emptyList());
-        return SoutTemplate.parse(new StringReader(template), configuration);
+        return SoutTemplate.read(new StringReader(template), configuration);
     }
 
     private void assertRendered(String expected, SoutTemplate template, Object data) throws IOException, IllegalAccessException {

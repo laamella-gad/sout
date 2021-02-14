@@ -18,46 +18,46 @@ public class DataConverterTest {
     private final DataConverter dataConverter = new DataConverter(defaultConfiguration);
 
     @Test
-    void listsGetConvertedToLists() {
+    public void listsGetConvertedToLists() {
         var objects = (List<Integer>) newArrayList(dataConverter.toIterator(asList(1, 2, 3)));
         assertThat(objects).containsExactly(1, 2, 3);
     }
 
     @Test
-    void arraysGetConvertedToLists() {
+    public void arraysGetConvertedToLists() {
         var objects = (List<Integer>) newArrayList(dataConverter.toIterator(new int[]{1, 2, 3}));
         assertThat(objects).containsExactly(1, 2, 3);
     }
 
     @Test
-    void streamsGetConvertedToLists() {
+    public void streamsGetConvertedToLists() {
         var objects = (List<Integer>) newArrayList(dataConverter.toIterator(Stream.of(1, 2, 3)));
         assertThat(objects).containsExactly(1, 2, 3);
     }
 
     @Test
-    void renderStringToText() throws IOException {
+    public void renderStringToText() throws IOException {
         var output = new StringWriter();
         dataConverter.renderAsText("abc", output);
         assertThat(output.toString()).isEqualTo("abc");
     }
 
     @Test
-    void renderIntToText() throws IOException {
+    public void renderIntToText() throws IOException {
         var output = new StringWriter();
         dataConverter.renderAsText(123, output);
         assertThat(output.toString()).isEqualTo("123");
     }
 
     @Test
-    void renderNullToText() throws IOException {
+    public void renderNullToText() throws IOException {
         var output = new StringWriter();
         dataConverter.renderAsText(null, output);
         assertThat(output.toString()).isEqualTo("");
     }
 
     @Test
-    void specialRenderer() throws IOException {
+    public void specialRenderer() throws IOException {
         TypeHandler specialTypeHandler = (value, output) -> {
             if (value instanceof Integer) {
                 output.append("INT");

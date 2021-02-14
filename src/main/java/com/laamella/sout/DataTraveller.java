@@ -63,6 +63,11 @@ class DataTraveller {
         if (isserValue != null) {
             return isserValue;
         }
+        // Get the value from name()
+        var plainMethodValue = getMethodValue(target, target.getClass(), name);
+        if (plainMethodValue != null) {
+            return plainMethodValue;
+        }
         // Give up.
         throw new IllegalArgumentException(String.format("%s not found on %s", name, target));
     }

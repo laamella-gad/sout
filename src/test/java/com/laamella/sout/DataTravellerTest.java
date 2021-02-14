@@ -16,40 +16,47 @@ public class DataTravellerTest {
     private final DataTraveller dataTraveller = new DataTraveller(defaultConfiguration);
 
     @Test
-    void findValueOfMapEntry() throws IllegalAccessException {
+    public void findValueOfMapEntry() throws IllegalAccessException {
         Object value = dataTraveller.findValueOf(ImmutableMap.of("x", "y"), "x");
         assertThat(value).isEqualTo("y");
     }
 
     @Test
-    void findValueOfFunctionApplication() throws IllegalAccessException {
+    public void findValueOfFunctionApplication() throws IllegalAccessException {
         Object value = dataTraveller.findValueOf((Function<String, String>) o -> o + "woo", "name");
         assertThat(value).isEqualTo("namewoo");
     }
 
     @Test
-    void findValueOfField() throws IllegalAccessException {
+    public void findValueOfField() throws IllegalAccessException {
         TestModel testModel = new TestModel();
         Object value = dataTraveller.findValueOf(testModel, "field");
         assertThat(value).isEqualTo("*field*");
     }
 
     @Test
-    void findValueOfGetter() throws IllegalAccessException {
+    public void findValueOfGetter() throws IllegalAccessException {
         TestModel testModel = new TestModel();
         Object value = dataTraveller.findValueOf(testModel, "getter");
         assertThat(value).isEqualTo("*getter*");
     }
 
     @Test
-    void findValueOfIsser() throws IllegalAccessException {
+    public void findValueOfIsser() throws IllegalAccessException {
         TestModel testModel = new TestModel();
         Object value = dataTraveller.findValueOf(testModel, "isser");
         assertThat(value).isEqualTo(TRUE);
     }
 
     @Test
-    void findCustomValue() throws IllegalAccessException {
+    public void findValueOfRenderable() throws IllegalAccessException {
+        TestModel testModel = new TestModel();
+        Object value = dataTraveller.findValueOf(testModel, "renderable");
+        assertThat(value).isInstanceOf(Renderable.class);
+    }
+
+    @Test
+    public void findCustomValue() throws IllegalAccessException {
         NameResolver hrankResolver = (target, name) -> {
             if (name.equals("hrank")) {
                 return "vavoom";

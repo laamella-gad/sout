@@ -20,20 +20,20 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ExamplesTest {
     @Test
-    void specifyTheTemplateDirectlyInAString() throws IOException, IllegalAccessException {
+    public void specifyTheTemplateDirectlyInAString() throws IOException, IllegalAccessException {
         var configuration = new SoutConfiguration('{', '|', '}', '\\', emptyList(), emptyList());
-        var template = SoutTemplate.parse(new StringReader("Hello {}"), configuration);
+        var template = SoutTemplate.read(new StringReader("Hello {}"), configuration);
         var output = new StringWriter();
         template.render("Piet", output);
         assertEquals("Hello Piet", output.toString());
     }
 
     @Test
-    void loadTheTemplateFromTheClassPath() throws IOException, IllegalAccessException {
+    public void loadTheTemplateFromTheClassPath() throws IOException, IllegalAccessException {
         try (var templateInputStream = getClass().getResource("/templates/hello.sout").openStream();
              var reader = new InputStreamReader(templateInputStream, UTF_8)) {
             var configuration = new SoutConfiguration('<', '|', '>', '\\', emptyList(), emptyList());
-            var template = SoutTemplate.parse(reader, configuration);
+            var template = SoutTemplate.read(reader, configuration);
             var output = new StringWriter();
             template.render(new Letter("Piet", "Hopscotch inc.", new Item("ball", 14.55), new Item("Triangle", 3.99)), output);
             assertEquals("""
@@ -50,7 +50,7 @@ public class ExamplesTest {
     }
 
     @Test
-    void useACustomDateFormatter() throws IOException, IllegalAccessException {
+    public void useACustomDateFormatter() throws IOException, IllegalAccessException {
         var customDateHandler = new TypeHandler() {
             @Override
             public boolean render(Object value, Writer output) throws IOException {
@@ -64,24 +64,24 @@ public class ExamplesTest {
         };
 
         var configuration = new SoutConfiguration('{', '|', '}', '\\', emptyList(), singletonList(customDateHandler));
-        var template = SoutTemplate.parse(new StringReader("Date zero is {}"), configuration);
+        var template = SoutTemplate.read(new StringReader("Date zero is {}"), configuration);
         var output = new StringWriter();
         template.render(new Date(0), output);
         assertEquals("Date zero is 01-01-1970", output.toString());
     }
 
     @Test
-    void useNameResolverToForwardToAnotherTemplate() throws IOException, IllegalAccessException {
+    public void useNameResolverToForwardToAnotherTemplate() throws IOException, IllegalAccessException {
         // The TemplateResolver stores a map of name->template.
         var templateResolver = new TemplateResolver();
         var configuration = new SoutConfiguration('{', '|', '}', '\\', singletonList(templateResolver), emptyList());
 
         // Put one template in the resolver, named "oei".
-        var templateToResolve = SoutTemplate.parse(new StringReader("oei {name} oeiii"), configuration);
+        var templateToResolve = SoutTemplate.read(new StringReader("oei {name} oeiii"), configuration);
         templateResolver.put("oei", templateToResolve);
 
         // The name oei should be resolved to the template.
-        var template = SoutTemplate.parse(new StringReader("Hello {oei}"), configuration);
+        var template = SoutTemplate.read(new StringReader("Hello {oei}"), configuration);
         var output = new StringWriter();
         template.render(ImmutableMap.of("name", "Piet"), output);
         assertEquals("Hello oei Piet oeiii", output.toString());
