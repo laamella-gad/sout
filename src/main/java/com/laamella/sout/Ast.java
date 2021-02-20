@@ -7,7 +7,6 @@ import java.util.List;
 
 import static java.util.stream.Collectors.joining;
 
-
 abstract class Node {
     final Position position;
 
@@ -15,30 +14,36 @@ abstract class Node {
         this.position = position;
     }
 
-    abstract void render(Object data, Writer output) throws IOException, IllegalAccessException;
+    abstract void render(Object model, Writer outputWriter) throws IOException, IllegalAccessException;
 }
 
 class NameNode extends Node {
     private final String name;
     private final NameRenderer nameRenderer;
-    private final ModelTraveller modelTraveller;
-    private final DataConverter dataConverter;
+    private final NameResolver nameResolver;
+    private final TypeRenderer typeRenderer;
 
-    NameNode(String name, Position position, NameRenderer nameRenderer, ModelTraveller modelTraveller, DataConverter dataConverter) {
+    NameNode(String name, Position position, NameRenderer nameRenderer, NameResolver nameResolver, TypeRenderer typeRenderer) {
         super(position);
         this.name = name;
         this.nameRenderer = nameRenderer;
-        this.modelTraveller = modelTraveller;
-        this.dataConverter = dataConverter;
+        this.nameResolver = nameResolver;
+        this.typeRenderer = typeRenderer;
     }
 
     @Override
-    void render(Object data, Writer output) throws IOException, IllegalAccessException {
-            if (nameRenderer.render(data, name, output)) {
-                return;
-            }
-        Object value = modelTraveller.evaluateNameOnModel(data, name);
-        dataConverter.renderAsText(value, output);
+    void render(Object model, Writer outputWriter) throws IOException, IllegalAccessException {
+        if (nameRenderer.render(model, name, outputWriter)) {
+            return;
+        }
+        Object subModel = nameResolver.evaluateNameOnModel(model, name);
+        if (typeRenderer.write(subModel, outputWriter)) {
+            return;
+        }
+        if (subModel == null) {
+            throw new IllegalArgumentException("Null value.");
+        }
+        outputWriter.append(subModel.toString());
     }
 
     @Override
@@ -57,28 +62,28 @@ abstract class ContainerNode extends Node {
 
 class LoopNode extends ContainerNode {
     private final String name;
-    private final ModelTraveller modelTraveller;
+    private final NameResolver nameResolver;
     private final DataConverter dataConverter;
     LoopPartNode mainPart = null;
     LoopPartNode separatorPart = null;
     LoopPartNode leadIn = null;
     LoopPartNode leadOut = null;
 
-    LoopNode(String name, Position position, ModelTraveller modelTraveller, DataConverter dataConverter) {
+    LoopNode(String name, Position position, NameResolver nameResolver, DataConverter dataConverter) {
         super(position);
         this.name = name;
-        this.modelTraveller = modelTraveller;
+        this.nameResolver = nameResolver;
         this.dataConverter = dataConverter;
     }
 
     @Override
-    public void render(Object data, Writer outputWriter) throws IOException, IllegalAccessException {
-        var listData = dataConverter.toIterator(modelTraveller.evaluateNameOnModel(data, name));
+    public void render(Object model, Writer outputWriter) throws IOException, IllegalAccessException {
+        var listData = dataConverter.toIterator(nameResolver.evaluateNameOnModel(model, name));
 
         var hasItems = listData.hasNext();
 
         if (hasItems && leadIn != null) {
-            leadIn.render(data, outputWriter);
+            leadIn.render(model, outputWriter);
         }
 
         var printSeparator = false;
@@ -91,7 +96,7 @@ class LoopNode extends ContainerNode {
             mainPart.render(listElement, outputWriter);
         }
         if (hasItems && leadOut != null) {
-            leadOut.render(data, outputWriter);
+            leadOut.render(model, outputWriter);
         }
     }
 
@@ -107,9 +112,9 @@ class LoopPartNode extends ContainerNode {
     }
 
     @Override
-    void render(Object data, Writer output) throws IOException, IllegalAccessException {
+    void render(Object model, Writer outputWriter) throws IOException, IllegalAccessException {
         for (var child : children) {
-            child.render(data, output);
+            child.render(model, outputWriter);
         }
     }
 
@@ -128,8 +133,8 @@ class TextNode extends Node {
     }
 
     @Override
-    public void render(Object data, Writer output) throws IOException {
-        output.append(text);
+    public void render(Object model, Writer outputWriter) throws IOException {
+        outputWriter.append(text);
     }
 
     @Override
@@ -144,9 +149,9 @@ class RootNode extends ContainerNode {
     }
 
     @Override
-    public void render(Object data, Writer output) throws IOException, IllegalAccessException {
+    public void render(Object model, Writer outputWriter) throws IOException, IllegalAccessException {
         for (var child : children) {
-            child.render(data, output);
+            child.render(model, outputWriter);
         }
     }
 

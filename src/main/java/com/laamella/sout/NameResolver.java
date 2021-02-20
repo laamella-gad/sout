@@ -8,7 +8,7 @@ import java.util.function.Function;
  * Tries to go from object to object by evaluating names to fields, getters, maps, ...
  */
 @SuppressWarnings("unchecked")
-class ModelTraveller {
+class NameResolver {
 
     Object evaluateNameOnModel(Object model, String complexName) throws IllegalAccessException {
         int dotIndex = complexName.indexOf('.');
@@ -20,12 +20,13 @@ class ModelTraveller {
     }
 
     private Object innerEvaluateNameOnModel(Object target, String name) throws IllegalAccessException {
-        if (target == null) {
-            throw new NullPointerException(String.format("%s not found on null object.", name));
-        }
         // If the name is empty, the value is the target itself.
         if (name.isBlank()) {
             return target;
+        }
+        // If we're trying to resolve a name on a null object, it will always fail.
+        if (target == null) {
+            throw new NullPointerException(String.format("%s not found on null object.", name));
         }
         // Find name in the keys of a map.
         if (target instanceof Map) {

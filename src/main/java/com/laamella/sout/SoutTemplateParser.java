@@ -8,19 +8,22 @@ class SoutTemplateParser {
     private final int separatorChar;
     private final int closeChar;
     private final int escapeChar;
-    private final ModelTraveller modelTraveller;
+    private final NameResolver nameResolver;
     private final DataConverter dataConverter;
-    private final NameRenderer nameRenderers;
+    private final NameRenderer nameRenderer;
+    private final TypeRenderer typeRenderer;
 
     public SoutTemplateParser(int openChar, int separatorChar, int closeChar, int escapeChar,
-                              ModelTraveller modelTraveller, DataConverter dataConverter, NameRenderer nameRenderers) {
+                              NameResolver nameResolver, DataConverter dataConverter,
+                              NameRenderer nameRenderer, TypeRenderer typeRenderer) {
         this.openChar = openChar;
         this.separatorChar = separatorChar;
         this.closeChar = closeChar;
         this.escapeChar = escapeChar;
-        this.modelTraveller = modelTraveller;
+        this.nameResolver = nameResolver;
         this.dataConverter = dataConverter;
-        this.nameRenderers = nameRenderers;
+        this.nameRenderer = nameRenderer;
+        this.typeRenderer = typeRenderer;
     }
 
     enum State {READING_NAME, READING_TEXT}
@@ -114,7 +117,7 @@ class SoutTemplateParser {
                     case READING_NAME -> {
                         if (c == separatorChar) {
                             String name = text.consume();
-                            LoopNode loopNode = new LoopNode(name, context.lastPosition(), modelTraveller, dataConverter);
+                            LoopNode loopNode = new LoopNode(name, context.lastPosition(), nameResolver, dataConverter);
                             parseLoopNode(loopNode, context);
                             node.children.add(loopNode);
                             int parts = loopNode.children.size();
@@ -137,7 +140,7 @@ class SoutTemplateParser {
                         } else if (c == openChar) {
                             throw new IOException(String.format("Unexpected open %c in name.", c));
                         } else if (c == closeChar) {
-                            node.children.add(new NameNode(text.consume(), context.lastPosition(), nameRenderers, modelTraveller, dataConverter));
+                            node.children.add(new NameNode(text.consume(), context.lastPosition(), nameRenderer, nameResolver, typeRenderer));
                             state = State.READING_TEXT;
                         } else {
                             text.append(c);
