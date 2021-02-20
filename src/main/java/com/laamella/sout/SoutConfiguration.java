@@ -18,8 +18,8 @@ public class SoutConfiguration {
      * @param separatorChar   the character that separates parts of a loop, like "|"
      * @param closeChar       the character that closes a name or loop, like "}" or ">"
      * @param escapeChar      the character that can escape the openChar, separatorChar, and closeChar
-     * @param nameRenderer    a {@link NameRenderer} that will be asked if they can render a simple name (so no loops.)
-     * @param typeRenderer    a list of {@link TypeRenderer} that will be asked if they can render a specific type (class) that was encountered in the model.
+     * @param nameRenderer    a {@link NameRenderer} that will be asked if they can render a simple name (so no loops.) Can be null, meaning no special name rendering.
+     * @param typeRenderer    a list of {@link TypeRenderer} that will be asked if they can render a specific type (class) that was encountered in the model. Can be null, meaning no special type rendering.
      * @param allowNullValues true: a value of null is rendered as an empty string. false: a value of null throws an exception. This does not affect allowNullLoops.
      * @param allowNullLoops  true: a loop over a null collection is rendered as an empty string. false: a null collection throws an exception. This does not affect allowNullValues.
      */
@@ -31,8 +31,8 @@ public class SoutConfiguration {
         this.escapeChar = escapeChar;
         this.closeChar = closeChar;
         this.separatorChar = separatorChar;
-        this.nameRenderer = nameRenderer;
-        this.typeRenderer = typeRenderer;
+        this.nameRenderer = nameRenderer == null ? (model, name, outputWriter) -> false : nameRenderer;
+        this.typeRenderer = typeRenderer == null ? (model, outputWriter) -> false : typeRenderer;
         this.allowNullValues = allowNullValues;
         this.allowNullLoops = allowNullLoops;
     }
