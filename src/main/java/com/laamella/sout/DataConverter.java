@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static java.util.Arrays.stream;
+import static java.util.Collections.emptyIterator;
 import static java.util.Collections.singletonList;
 
 class DataConverter {
@@ -17,7 +18,12 @@ class DataConverter {
     }
 
     Iterator<?> toIterator(Object model) {
-        if (model instanceof List) {
+        if (model == null) {
+            if (configuration.allowNullLoops) {
+                return emptyIterator();
+            }
+            throw new IllegalArgumentException("Null loop.");
+        } else if (model instanceof List) {
             return ((List<?>) model).iterator();
         } else if (model instanceof Object[]) {
             return stream((Object[]) model).iterator();
@@ -36,7 +42,10 @@ class DataConverter {
 
     void renderAsText(Object model, Writer writer) throws IOException, IllegalAccessException {
         if (model == null) {
-            return;
+            if (configuration.allowNullValues) {
+                return;
+            }
+            throw new IllegalArgumentException("Null value.");
         }
         for (TypeRenderer typeRenderer : configuration.typeRenderers) {
             if (typeRenderer.write(model, writer)) {

@@ -14,7 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.util.Lists.newArrayList;
 
 public class DataConverterTest {
-    private final SoutConfiguration defaultConfiguration = new SoutConfiguration('{', '|', '}', '\\', emptyList(), emptyList());
+    private final SoutConfiguration defaultConfiguration = new SoutConfiguration('{', '|', '}', '\\', emptyList(), emptyList(), true, true);
     private final DataConverter dataConverter = new DataConverter(defaultConfiguration);
 
     @Test
@@ -65,7 +65,7 @@ public class DataConverterTest {
             }
             return false;
         };
-        var configuration = new SoutConfiguration('{', '|', '}', '\\', emptyList(), singletonList(specialTypeRenderer));
+        var configuration = new SoutConfiguration('{', '|', '}', '\\', emptyList(), singletonList(specialTypeRenderer), true, true);
         var output = new StringWriter();
         new DataConverter(configuration).renderAsText(123, output);
         assertThat(output.toString()).isEqualTo("INT");

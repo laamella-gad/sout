@@ -6,7 +6,7 @@ import java.io.Writer;
 @FunctionalInterface
 public interface NameRenderer {
     /**
-     * Custom name rendering. Does not work with loop syntax.
+     * Custom name rendering. Ignored for loop syntax.
      *
      * @param model  the data model where the name can be evaluated.
      * @param name   the name to evaluate.

@@ -102,7 +102,7 @@ public class SoutTemplateTest {
     }
 
     private SoutTemplate parse(String template) throws IOException {
-        var configuration = new SoutConfiguration('{', '|', '}', '\\', emptyList(), emptyList());
+        var configuration = new SoutConfiguration('{', '|', '}', '\\', emptyList(), emptyList(), true, true);
         return SoutTemplate.read(new StringReader(template), configuration);
     }
 
