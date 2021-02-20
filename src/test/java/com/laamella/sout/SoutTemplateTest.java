@@ -103,7 +103,7 @@ public class SoutTemplateTest {
 
     private SoutTemplate parse(String template) throws IOException {
         var configuration = new SoutConfiguration('{', '|', '}', '\\', emptyList(), emptyList(), true, true);
-        return SoutTemplate.read(new StringReader(template), configuration);
+        return new SoutTemplate(new StringReader(template), configuration);
     }
 
     private void assertRendered(String expected, SoutTemplate template, Object data) throws IOException, IllegalAccessException {

@@ -22,7 +22,7 @@ public class ExamplesTest {
     @Test
     public void specifyTheTemplateDirectlyInAString() throws IOException, IllegalAccessException {
         var configuration = new SoutConfiguration('{', '|', '}', '\\', emptyList(), emptyList(), true, true);
-        var template = SoutTemplate.read(new StringReader("Hello {}"), configuration);
+        var template = new SoutTemplate(new StringReader("Hello {}"), configuration);
         var output = new StringWriter();
         template.render("Piet", output);
         assertEquals("Hello Piet", output.toString());
@@ -33,7 +33,7 @@ public class ExamplesTest {
         try (var templateInputStream = getClass().getResource("/templates/hello.sout").openStream();
              var reader = new InputStreamReader(templateInputStream, UTF_8)) {
             var configuration = new SoutConfiguration('<', '|', '>', '\\', emptyList(), emptyList(), true, true);
-            var template = SoutTemplate.read(reader, configuration);
+            var template = new SoutTemplate(reader, configuration);
             var output = new StringWriter();
             template.render(new Letter("Piet", "Hopscotch inc.", new Item("ball", 14.55), new Item("Triangle", 3.99)), output);
             assertEquals("""
@@ -53,10 +53,10 @@ public class ExamplesTest {
     public void useACustomDateFormatter() throws IOException, IllegalAccessException {
         var customDateHandler = new TypeRenderer() {
             @Override
-            public boolean write(Object model, Writer output) throws IOException {
+            public boolean write(Object model, Writer outputWriter) throws IOException {
                 if (model instanceof Date) {
                     String formattedDate = new SimpleDateFormat("dd-MM-yyyy").format((Date) model);
-                    output.write(formattedDate);
+                    outputWriter.write(formattedDate);
                     return true;
                 }
                 return false;
@@ -64,7 +64,7 @@ public class ExamplesTest {
         };
 
         var configuration = new SoutConfiguration('{', '|', '}', '\\', emptyList(), singletonList(customDateHandler), true, true);
-        var template = SoutTemplate.read(new StringReader("Date zero is {}"), configuration);
+        var template = new SoutTemplate(new StringReader("Date zero is {}"), configuration);
         var output = new StringWriter();
         template.render(new Date(0), output);
         assertEquals("Date zero is 01-01-1970", output.toString());
@@ -77,11 +77,11 @@ public class ExamplesTest {
         var configuration = new SoutConfiguration('{', '|', '}', '\\', singletonList(templateResolver), emptyList(), true, true);
 
         // Put one template in the resolver, named "oei".
-        var templateToResolve = SoutTemplate.read(new StringReader("oei {name} oeiii"), configuration);
+        var templateToResolve = new SoutTemplate(new StringReader("oei {name} oeiii"), configuration);
         templateResolver.put("oei", templateToResolve);
 
         // The name oei should trigger the TemplateWriter to render the template to the output.
-        var template = SoutTemplate.read(new StringReader("Hello {oei}"), configuration);
+        var template = new SoutTemplate(new StringReader("Hello {oei}"), configuration);
         var output = new StringWriter();
         template.render(ImmutableMap.of("name", "Piet"), output);
         assertEquals("Hello oei Piet oeiii", output.toString());
@@ -104,16 +104,17 @@ class TemplateRenderer implements NameRenderer {
     }
 
     @Override
-    public boolean render(Object model, String name, Writer output) throws IOException, IllegalAccessException {
+    public boolean render(Object model, String name, Writer outputWriter) throws IOException, IllegalAccessException {
         SoutTemplate template = templates.get(name);
         if (template == null) {
             return false;
         }
-        template.render(model, output);
+        template.render(model, outputWriter);
         return true;
     }
 }
 
+// A test model:
 class Letter {
     final String name;
     final String us;

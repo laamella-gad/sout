@@ -4,23 +4,24 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 
+/**
+ * A template. The main class of the sout library.
+ */
 public class SoutTemplate {
     private final RootNode rootNode;
     private final SoutConfiguration configuration;
 
-    private SoutTemplate(RootNode rootNode, SoutConfiguration configuration) {
-        this.rootNode = rootNode;
+    /**
+     * Create a new template. It is parsed immediately, so be prepared to handle exceptions about invalid templates here.
+     */
+    public SoutTemplate(Reader templateReader, SoutConfiguration configuration) throws IOException {
         this.configuration = configuration;
-    }
-
-    public static SoutTemplate read(Reader template, SoutConfiguration configuration) throws IOException {
         var parser = new SoutTemplateParser(configuration);
-        var rootNode = parser.parse(template);
-        return new SoutTemplate(rootNode, configuration);
+        rootNode = parser.parse(templateReader);
     }
 
-    public void render(Object data, Writer output) throws IOException, IllegalAccessException {
-        rootNode.render(data, output, configuration);
+    public void render(Object data, Writer outputWriter) throws IOException, IllegalAccessException {
+        rootNode.render(data, outputWriter, configuration);
     }
 
     @Override
