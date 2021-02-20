@@ -8,13 +8,13 @@ import java.io.StringWriter;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class NameNodeTest {
+public class NameRendererTest {
     private final CustomNameRenderer noCustomNameRenderer = (model, name, outputWriter) -> false;
     private final CustomTypeRenderer noCustomTypeRenderer = (model, outputWriter) -> false;
 
     @Test
     public void renderStringToText() throws IOException, IllegalAccessException {
-        NameNode nameNode = new NameNode("", new Position(0, 0), noCustomNameRenderer,
+        NameRenderer nameNode = new NameRenderer("", new Position(0, 0), noCustomNameRenderer,
                 new NameResolver(),
                 noCustomTypeRenderer
         );
@@ -26,7 +26,7 @@ public class NameNodeTest {
 
     @Test
     public void renderIntToText() throws IOException, IllegalAccessException {
-        NameNode nameNode = new NameNode("", new Position(0, 0), noCustomNameRenderer,
+        NameRenderer nameNode = new NameRenderer("", new Position(0, 0), noCustomNameRenderer,
                 new NameResolver(),
                 noCustomTypeRenderer
         );
@@ -37,7 +37,7 @@ public class NameNodeTest {
 
     @Test
     public void nullsAreNotAllowedInTheModel() {
-        NameNode nameNode = new NameNode("", new Position(0, 0), noCustomNameRenderer,
+        NameRenderer nameNode = new NameRenderer("", new Position(0, 0), noCustomNameRenderer,
                 new NameResolver(),
                 noCustomTypeRenderer);
         assertThatThrownBy(() -> nameNode.render(null, new StringWriter()))
@@ -48,7 +48,7 @@ public class NameNodeTest {
     @Test
     public void specialNullRendererAllowsNullsInTheModel() throws IOException, IllegalAccessException {
         CustomTypeRenderer allowNullCustomTypeRenderer = (model, outputWriter) -> model == null;
-        NameNode nameNode = new NameNode("", new Position(0, 0), noCustomNameRenderer,
+        NameRenderer nameNode = new NameRenderer("", new Position(0, 0), noCustomNameRenderer,
                 new NameResolver(),
                 allowNullCustomTypeRenderer);
         var output = new StringWriter();
@@ -65,7 +65,7 @@ public class NameNodeTest {
             }
             return false;
         };
-        NameNode nameNode = new NameNode("", new Position(0, 0), noCustomNameRenderer,
+        NameRenderer nameNode = new NameRenderer("", new Position(0, 0), noCustomNameRenderer,
                 new NameResolver(),
                 specialCustomTypeRenderer);
 

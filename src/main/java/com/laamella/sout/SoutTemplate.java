@@ -8,7 +8,7 @@ import java.io.Writer;
  * A template. The main class of the sout library.
  */
 public class SoutTemplate {
-    private final RootNode rootNode;
+    private final RootRenderer rootNode;
 
     /**
      * Create a new template. It is parsed immediately, so be prepared to handle exceptions about invalid templates here.
@@ -17,9 +17,10 @@ public class SoutTemplate {
         var parser = new SoutTemplateParser(
                 configuration.openChar, configuration.separatorChar, configuration.closeChar, configuration.escapeChar,
                 new NameResolver(),
-                new DataConverter(),
+                new IteratorFactory(),
                 configuration.customNameRenderer,
-                configuration.customTypeRenderer);
+                configuration.customTypeRenderer,
+                configuration.customIteratorFactory);
         rootNode = parser.parse(templateReader);
     }
 

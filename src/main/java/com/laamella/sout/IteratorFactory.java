@@ -7,7 +7,7 @@ import java.util.stream.Stream;
 import static java.util.Arrays.stream;
 import static java.util.Collections.singletonList;
 
-class DataConverter {
+class IteratorFactory {
     Iterator<?> toIterator(Object model) {
         if (model instanceof List) {
             return ((List<?>) model).iterator();

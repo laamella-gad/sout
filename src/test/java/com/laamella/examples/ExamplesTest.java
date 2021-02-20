@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class ExamplesTest {
     @Test
     public void specifyTheTemplateDirectlyInAString() throws IOException, IllegalAccessException {
-        var configuration = new SoutConfiguration('{', '|', '}', '\\', null, null);
+        var configuration = new SoutConfiguration('{', '|', '}', '\\', null, null, null);
         var template = new SoutTemplate(new StringReader("Hello {}"), configuration);
         var output = new StringWriter();
         template.render("Piet", output);
@@ -30,7 +30,7 @@ public class ExamplesTest {
     public void loadTheTemplateFromTheClassPath() throws IOException, IllegalAccessException {
         try (var templateInputStream = getClass().getResource("/templates/hello.sout").openStream();
              var reader = new InputStreamReader(templateInputStream, UTF_8)) {
-            var configuration = new SoutConfiguration('<', '|', '>', '\\', null, null);
+            var configuration = new SoutConfiguration('<', '|', '>', '\\', null, null, null);
             var template = new SoutTemplate(reader, configuration);
             var output = new StringWriter();
             template.render(new Letter("Piet", "Hopscotch inc.", new Item("ball", 14.55), new Item("Triangle", 3.99)), output);
@@ -61,7 +61,7 @@ public class ExamplesTest {
             }
         };
 
-        var configuration = new SoutConfiguration('{', '|', '}', '\\', null, customDateHandler);
+        var configuration = new SoutConfiguration('{', '|', '}', '\\', null, customDateHandler, null);
         var template = new SoutTemplate(new StringReader("Date zero is {}"), configuration);
         var output = new StringWriter();
         template.render(new Date(0), output);
@@ -72,7 +72,7 @@ public class ExamplesTest {
     public void useNameResolverToForwardToAnotherTemplate() throws IOException, IllegalAccessException {
         // The TemplateResolver stores a map of name->template.
         var templateResolver = new TemplateRendererCustom();
-        var configuration = new SoutConfiguration('{', '|', '}', '\\', templateResolver, null);
+        var configuration = new SoutConfiguration('{', '|', '}', '\\', templateResolver, null, null);
 
         // Put one template in the resolver, named "oei".
         var templateToResolve = new SoutTemplate(new StringReader("oei {name} oeiii"), configuration);

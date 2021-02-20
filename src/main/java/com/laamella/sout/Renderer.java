@@ -7,23 +7,23 @@ import java.util.List;
 
 import static java.util.stream.Collectors.joining;
 
-abstract class Node {
+abstract class Renderer {
     final Position position;
 
-    Node(Position position) {
+    Renderer(Position position) {
         this.position = position;
     }
 
     abstract void render(Object model, Writer outputWriter) throws IOException, IllegalAccessException;
 }
 
-class NameNode extends Node {
+class NameRenderer extends Renderer {
     private final String name;
     private final CustomNameRenderer customNameRenderer;
     private final NameResolver nameResolver;
     private final CustomTypeRenderer customTypeRenderer;
 
-    NameNode(String name, Position position, CustomNameRenderer customNameRenderer, NameResolver nameResolver, CustomTypeRenderer customTypeRenderer) {
+    NameRenderer(String name, Position position, CustomNameRenderer customNameRenderer, NameResolver nameResolver, CustomTypeRenderer customTypeRenderer) {
         super(position);
         this.name = name;
         this.customNameRenderer = customNameRenderer;
@@ -52,43 +52,47 @@ class NameNode extends Node {
     }
 }
 
-abstract class ContainerNode extends Node {
-    final List<Node> children = new ArrayList<>();
+abstract class ContainerRenderer extends Renderer {
+    final List<Renderer> children = new ArrayList<>();
 
-    ContainerNode(Position position) {
+    ContainerRenderer(Position position) {
         super(position);
     }
 }
 
-class LoopNode extends ContainerNode {
+class LoopRenderer extends ContainerRenderer {
     private final String name;
     private final NameResolver nameResolver;
-    private final DataConverter dataConverter;
-    LoopPartNode mainPart = null;
-    LoopPartNode separatorPart = null;
-    LoopPartNode leadIn = null;
-    LoopPartNode leadOut = null;
+    private final IteratorFactory iteratorFactory;
+    private final CustomIteratorFactory customIteratorFactory;
+    LoopPartRenderer mainPart = null;
+    LoopPartRenderer separatorPart = null;
+    LoopPartRenderer leadIn = null;
+    LoopPartRenderer leadOut = null;
 
-    LoopNode(String name, Position position, NameResolver nameResolver, DataConverter dataConverter) {
+    LoopRenderer(String name, Position position, NameResolver nameResolver, IteratorFactory iteratorFactory, CustomIteratorFactory customIteratorFactory) {
         super(position);
         this.name = name;
         this.nameResolver = nameResolver;
-        this.dataConverter = dataConverter;
+        this.iteratorFactory = iteratorFactory;
+        this.customIteratorFactory = customIteratorFactory;
     }
 
     @Override
     public void render(Object model, Writer outputWriter) throws IOException, IllegalAccessException {
-        var listData = dataConverter.toIterator(nameResolver.evaluateNameOnModel(model, name));
-
-        var hasItems = listData.hasNext();
+        var iterator = customIteratorFactory.toIterator(model);
+        if (iterator == null) {
+            iterator = iteratorFactory.toIterator(nameResolver.evaluateNameOnModel(model, name));
+        }
+        var hasItems = iterator.hasNext();
 
         if (hasItems && leadIn != null) {
             leadIn.render(model, outputWriter);
         }
 
         var printSeparator = false;
-        while (listData.hasNext()) {
-            var listElement = listData.next();
+        while (iterator.hasNext()) {
+            var listElement = iterator.next();
             if (printSeparator && separatorPart != null) {
                 separatorPart.render(listElement, outputWriter);
             }
@@ -106,8 +110,8 @@ class LoopNode extends ContainerNode {
     }
 }
 
-class LoopPartNode extends ContainerNode {
-    LoopPartNode(Position position) {
+class LoopPartRenderer extends ContainerRenderer {
+    LoopPartRenderer(Position position) {
         super(position);
     }
 
@@ -124,10 +128,10 @@ class LoopPartNode extends ContainerNode {
     }
 }
 
-class TextNode extends Node {
+class TextRenderer extends Renderer {
     final String text;
 
-    TextNode(String text, Position position) {
+    TextRenderer(String text, Position position) {
         super(position);
         this.text = text;
     }
@@ -143,8 +147,8 @@ class TextNode extends Node {
     }
 }
 
-class RootNode extends ContainerNode {
-    RootNode() {
+class RootRenderer extends ContainerRenderer {
+    RootRenderer() {
         super(new Position(0, 0));
     }
 
