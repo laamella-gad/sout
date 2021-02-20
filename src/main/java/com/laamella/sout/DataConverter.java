@@ -11,12 +11,12 @@ import static java.util.Collections.emptyIterator;
 import static java.util.Collections.singletonList;
 
 class DataConverter {
-    private final List<TypeRenderer> typeRenderers;
+    private final TypeRenderer typeRenderer;
     private final boolean allowNullValues;
     private final boolean allowNullLoops;
 
-    DataConverter(List<TypeRenderer> typeRenderers, boolean allowNullValues, boolean allowNullLoops) {
-        this.typeRenderers = typeRenderers;
+    DataConverter(TypeRenderer typeRenderer, boolean allowNullValues, boolean allowNullLoops) {
+        this.typeRenderer = typeRenderer;
         this.allowNullValues = allowNullValues;
         this.allowNullLoops = allowNullLoops;
     }
@@ -51,10 +51,8 @@ class DataConverter {
             }
             throw new IllegalArgumentException("Null value.");
         }
-        for (TypeRenderer typeRenderer : typeRenderers) {
-            if (typeRenderer.write(model, writer)) {
-                return;
-            }
+        if (typeRenderer.write(model, writer)) {
+            return;
         }
         writer.append(model.toString());
     }

@@ -17,8 +17,8 @@ public class SoutTemplate {
         var parser = new SoutTemplateParser(
                 configuration.openChar, configuration.separatorChar, configuration.closeChar, configuration.escapeChar,
                 new ModelTraveller(),
-                new DataConverter(configuration.typeRenderers, configuration.allowNullValues, configuration.allowNullLoops),
-                configuration.nameRenderers);
+                new DataConverter(configuration.typeRenderer, configuration.allowNullValues, configuration.allowNullLoops),
+                configuration.nameRenderer);
         rootNode = parser.parse(templateReader);
     }
 

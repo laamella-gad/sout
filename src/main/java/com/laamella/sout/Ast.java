@@ -20,25 +20,23 @@ abstract class Node {
 
 class NameNode extends Node {
     private final String name;
-    private final List<NameRenderer> nameRenderers;
+    private final NameRenderer nameRenderer;
     private final ModelTraveller modelTraveller;
     private final DataConverter dataConverter;
 
-    NameNode(String name, Position position, List<NameRenderer> nameRenderers, ModelTraveller modelTraveller, DataConverter dataConverter) {
+    NameNode(String name, Position position, NameRenderer nameRenderer, ModelTraveller modelTraveller, DataConverter dataConverter) {
         super(position);
         this.name = name;
-        this.nameRenderers = nameRenderers;
+        this.nameRenderer = nameRenderer;
         this.modelTraveller = modelTraveller;
         this.dataConverter = dataConverter;
     }
 
     @Override
     void render(Object data, Writer output) throws IOException, IllegalAccessException {
-        for (NameRenderer nameRenderer : nameRenderers) {
             if (nameRenderer.render(data, name, output)) {
                 return;
             }
-        }
         Object value = modelTraveller.evaluateNameOnModel(data, name);
         dataConverter.renderAsText(value, output);
     }

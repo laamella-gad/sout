@@ -2,7 +2,6 @@ package com.laamella.sout;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.util.List;
 
 class SoutTemplateParser {
     private final int openChar;
@@ -11,10 +10,10 @@ class SoutTemplateParser {
     private final int escapeChar;
     private final ModelTraveller modelTraveller;
     private final DataConverter dataConverter;
-    private final List<NameRenderer> nameRenderers;
+    private final NameRenderer nameRenderers;
 
     public SoutTemplateParser(int openChar, int separatorChar, int closeChar, int escapeChar,
-                              ModelTraveller modelTraveller, DataConverter dataConverter, List<NameRenderer> nameRenderers) {
+                              ModelTraveller modelTraveller, DataConverter dataConverter, NameRenderer nameRenderers) {
         this.openChar = openChar;
         this.separatorChar = separatorChar;
         this.closeChar = closeChar;

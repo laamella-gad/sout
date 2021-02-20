@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 
-import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SoutTemplateTest {
@@ -102,7 +101,7 @@ public class SoutTemplateTest {
     }
 
     private SoutTemplate parse(String template) throws IOException {
-        var configuration = new SoutConfiguration('{', '|', '}', '\\', emptyList(), emptyList(), true, true);
+        var configuration = new SoutConfiguration('{', '|', '}', '\\', (model, name, outputWriter) -> false, (model, outputWriter) -> false, true, true);
         return new SoutTemplate(new StringReader(template), configuration);
     }
 

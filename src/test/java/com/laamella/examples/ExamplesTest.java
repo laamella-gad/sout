@@ -14,14 +14,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ExamplesTest {
     @Test
     public void specifyTheTemplateDirectlyInAString() throws IOException, IllegalAccessException {
-        var configuration = new SoutConfiguration('{', '|', '}', '\\', emptyList(), emptyList(), true, true);
+        var configuration = new SoutConfiguration('{', '|', '}', '\\', (model, name, outputWriter) -> false, (model, outputWriter) -> false, true, true);
         var template = new SoutTemplate(new StringReader("Hello {}"), configuration);
         var output = new StringWriter();
         template.render("Piet", output);
@@ -32,7 +30,7 @@ public class ExamplesTest {
     public void loadTheTemplateFromTheClassPath() throws IOException, IllegalAccessException {
         try (var templateInputStream = getClass().getResource("/templates/hello.sout").openStream();
              var reader = new InputStreamReader(templateInputStream, UTF_8)) {
-            var configuration = new SoutConfiguration('<', '|', '>', '\\', emptyList(), emptyList(), true, true);
+            var configuration = new SoutConfiguration('<', '|', '>', '\\', (model, name, outputWriter) -> false, (model, outputWriter) -> false, true, true);
             var template = new SoutTemplate(reader, configuration);
             var output = new StringWriter();
             template.render(new Letter("Piet", "Hopscotch inc.", new Item("ball", 14.55), new Item("Triangle", 3.99)), output);
@@ -63,7 +61,7 @@ public class ExamplesTest {
             }
         };
 
-        var configuration = new SoutConfiguration('{', '|', '}', '\\', emptyList(), singletonList(customDateHandler), true, true);
+        var configuration = new SoutConfiguration('{', '|', '}', '\\', (model, name, outputWriter) -> false, customDateHandler, true, true);
         var template = new SoutTemplate(new StringReader("Date zero is {}"), configuration);
         var output = new StringWriter();
         template.render(new Date(0), output);
@@ -74,7 +72,7 @@ public class ExamplesTest {
     public void useNameResolverToForwardToAnotherTemplate() throws IOException, IllegalAccessException {
         // The TemplateResolver stores a map of name->template.
         var templateResolver = new TemplateRenderer();
-        var configuration = new SoutConfiguration('{', '|', '}', '\\', singletonList(templateResolver), emptyList(), true, true);
+        var configuration = new SoutConfiguration('{', '|', '}', '\\', templateResolver, (model, outputWriter) -> false, true, true);
 
         // Put one template in the resolver, named "oei".
         var templateToResolve = new SoutTemplate(new StringReader("oei {name} oeiii"), configuration);
