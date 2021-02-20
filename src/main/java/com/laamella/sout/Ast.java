@@ -19,25 +19,25 @@ abstract class Node {
 
 class NameNode extends Node {
     private final String name;
-    private final NameRenderer nameRenderer;
+    private final CustomNameRenderer customNameRenderer;
     private final NameResolver nameResolver;
-    private final TypeRenderer typeRenderer;
+    private final CustomTypeRenderer customTypeRenderer;
 
-    NameNode(String name, Position position, NameRenderer nameRenderer, NameResolver nameResolver, TypeRenderer typeRenderer) {
+    NameNode(String name, Position position, CustomNameRenderer customNameRenderer, NameResolver nameResolver, CustomTypeRenderer customTypeRenderer) {
         super(position);
         this.name = name;
-        this.nameRenderer = nameRenderer;
+        this.customNameRenderer = customNameRenderer;
         this.nameResolver = nameResolver;
-        this.typeRenderer = typeRenderer;
+        this.customTypeRenderer = customTypeRenderer;
     }
 
     @Override
     void render(Object model, Writer outputWriter) throws IOException, IllegalAccessException {
-        if (nameRenderer.render(model, name, outputWriter)) {
+        if (customNameRenderer.render(model, name, outputWriter)) {
             return;
         }
         Object subModel = nameResolver.evaluateNameOnModel(model, name);
-        if (typeRenderer.write(subModel, outputWriter)) {
+        if (customTypeRenderer.write(subModel, outputWriter)) {
             return;
         }
         if (subModel == null) {

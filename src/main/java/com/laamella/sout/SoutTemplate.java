@@ -18,8 +18,8 @@ public class SoutTemplate {
                 configuration.openChar, configuration.separatorChar, configuration.closeChar, configuration.escapeChar,
                 new NameResolver(),
                 new DataConverter(),
-                configuration.nameRenderer,
-                configuration.typeRenderer);
+                configuration.customNameRenderer,
+                configuration.customTypeRenderer);
         rootNode = parser.parse(templateReader);
     }
 

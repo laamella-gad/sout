@@ -1,10 +1,10 @@
 package com.laamella.examples;
 
 import com.google.common.collect.ImmutableMap;
-import com.laamella.sout.NameRenderer;
+import com.laamella.sout.CustomNameRenderer;
+import com.laamella.sout.CustomTypeRenderer;
 import com.laamella.sout.SoutConfiguration;
 import com.laamella.sout.SoutTemplate;
-import com.laamella.sout.TypeRenderer;
 import org.junit.jupiter.api.Test;
 
 import java.io.*;
@@ -49,7 +49,7 @@ public class ExamplesTest {
 
     @Test
     public void useACustomDateFormatter() throws IOException, IllegalAccessException {
-        var customDateHandler = new TypeRenderer() {
+        var customDateHandler = new CustomTypeRenderer() {
             @Override
             public boolean write(Object model, Writer outputWriter) throws IOException {
                 if (model instanceof Date) {
@@ -71,7 +71,7 @@ public class ExamplesTest {
     @Test
     public void useNameResolverToForwardToAnotherTemplate() throws IOException, IllegalAccessException {
         // The TemplateResolver stores a map of name->template.
-        var templateResolver = new TemplateRenderer();
+        var templateResolver = new TemplateRendererCustom();
         var configuration = new SoutConfiguration('{', '|', '}', '\\', templateResolver, null);
 
         // Put one template in the resolver, named "oei".
@@ -94,7 +94,7 @@ public class ExamplesTest {
  * this will return the corresponding "sub"template,
  * and that will be rendered.
  */
-class TemplateRenderer implements NameRenderer {
+class TemplateRendererCustom implements CustomNameRenderer {
     private final Map<String, SoutTemplate> templates = new HashMap<>();
 
     public void put(String name, SoutTemplate template) {

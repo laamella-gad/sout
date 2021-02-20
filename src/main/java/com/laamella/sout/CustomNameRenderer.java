@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.Writer;
 
 @FunctionalInterface
-public interface NameRenderer {
+public interface CustomNameRenderer {
     /**
      * Custom name rendering. Ignored for loop syntax.
      *

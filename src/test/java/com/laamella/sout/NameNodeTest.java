@@ -9,14 +9,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class NameNodeTest {
-    private final NameRenderer noNameRenderer = (model, name, outputWriter) -> false;
-    private final TypeRenderer noTypeRenderer = (model, outputWriter) -> false;
+    private final CustomNameRenderer noCustomNameRenderer = (model, name, outputWriter) -> false;
+    private final CustomTypeRenderer noCustomTypeRenderer = (model, outputWriter) -> false;
 
     @Test
     public void renderStringToText() throws IOException, IllegalAccessException {
-        NameNode nameNode = new NameNode("", new Position(0, 0), noNameRenderer,
+        NameNode nameNode = new NameNode("", new Position(0, 0), noCustomNameRenderer,
                 new NameResolver(),
-                noTypeRenderer
+                noCustomTypeRenderer
         );
 
         var output = new StringWriter();
@@ -26,9 +26,9 @@ public class NameNodeTest {
 
     @Test
     public void renderIntToText() throws IOException, IllegalAccessException {
-        NameNode nameNode = new NameNode("", new Position(0, 0), noNameRenderer,
+        NameNode nameNode = new NameNode("", new Position(0, 0), noCustomNameRenderer,
                 new NameResolver(),
-                noTypeRenderer
+                noCustomTypeRenderer
         );
         var output = new StringWriter();
         nameNode.render(123, output);
@@ -37,9 +37,9 @@ public class NameNodeTest {
 
     @Test
     public void nullsAreNotAllowedInTheModel() {
-        NameNode nameNode = new NameNode("", new Position(0, 0), noNameRenderer,
+        NameNode nameNode = new NameNode("", new Position(0, 0), noCustomNameRenderer,
                 new NameResolver(),
-                noTypeRenderer);
+                noCustomTypeRenderer);
         assertThatThrownBy(() -> nameNode.render(null, new StringWriter()))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Null value.");
@@ -47,10 +47,10 @@ public class NameNodeTest {
 
     @Test
     public void specialNullRendererAllowsNullsInTheModel() throws IOException, IllegalAccessException {
-        TypeRenderer allowNullTypeRenderer = (model, outputWriter) -> model == null;
-        NameNode nameNode = new NameNode("", new Position(0, 0), noNameRenderer,
+        CustomTypeRenderer allowNullCustomTypeRenderer = (model, outputWriter) -> model == null;
+        NameNode nameNode = new NameNode("", new Position(0, 0), noCustomNameRenderer,
                 new NameResolver(),
-                allowNullTypeRenderer);
+                allowNullCustomTypeRenderer);
         var output = new StringWriter();
         nameNode.render(null, output);
         assertThat(output.toString()).isEqualTo("");
@@ -58,16 +58,16 @@ public class NameNodeTest {
 
     @Test
     public void specialRenderer() throws IOException, IllegalAccessException {
-        TypeRenderer specialTypeRenderer = (value, output) -> {
+        CustomTypeRenderer specialCustomTypeRenderer = (value, output) -> {
             if (value instanceof Integer) {
                 output.append("INT");
                 return true;
             }
             return false;
         };
-        NameNode nameNode = new NameNode("", new Position(0, 0), noNameRenderer,
+        NameNode nameNode = new NameNode("", new Position(0, 0), noCustomNameRenderer,
                 new NameResolver(),
-                specialTypeRenderer);
+                specialCustomTypeRenderer);
 
         var output = new StringWriter();
         nameNode.render(123, output);

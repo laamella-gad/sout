@@ -10,20 +10,20 @@ class SoutTemplateParser {
     private final int escapeChar;
     private final NameResolver nameResolver;
     private final DataConverter dataConverter;
-    private final NameRenderer nameRenderer;
-    private final TypeRenderer typeRenderer;
+    private final CustomNameRenderer customNameRenderer;
+    private final CustomTypeRenderer customTypeRenderer;
 
     public SoutTemplateParser(int openChar, int separatorChar, int closeChar, int escapeChar,
                               NameResolver nameResolver, DataConverter dataConverter,
-                              NameRenderer nameRenderer, TypeRenderer typeRenderer) {
+                              CustomNameRenderer customNameRenderer, CustomTypeRenderer customTypeRenderer) {
         this.openChar = openChar;
         this.separatorChar = separatorChar;
         this.closeChar = closeChar;
         this.escapeChar = escapeChar;
         this.nameResolver = nameResolver;
         this.dataConverter = dataConverter;
-        this.nameRenderer = nameRenderer;
-        this.typeRenderer = typeRenderer;
+        this.customNameRenderer = customNameRenderer;
+        this.customTypeRenderer = customTypeRenderer;
     }
 
     enum State {READING_NAME, READING_TEXT}
@@ -140,7 +140,7 @@ class SoutTemplateParser {
                         } else if (c == openChar) {
                             throw new IOException(String.format("Unexpected open %c in name.", c));
                         } else if (c == closeChar) {
-                            node.children.add(new NameNode(text.consume(), context.lastPosition(), nameRenderer, nameResolver, typeRenderer));
+                            node.children.add(new NameNode(text.consume(), context.lastPosition(), customNameRenderer, nameResolver, customTypeRenderer));
                             state = State.READING_TEXT;
                         } else {
                             text.append(c);
