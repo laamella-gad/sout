@@ -7,6 +7,7 @@ import java.util.function.Function;
 /**
  * Tries to go from object to object by evaluating names to fields, getters, maps, ...
  */
+@SuppressWarnings("unchecked")
 class ModelTraveller {
 
     Object evaluateNameOnModel(Object model, String complexName) throws IllegalAccessException {

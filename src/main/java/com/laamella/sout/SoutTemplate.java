@@ -9,19 +9,27 @@ import java.io.Writer;
  */
 public class SoutTemplate {
     private final RootNode rootNode;
-    private final SoutConfiguration configuration;
 
     /**
      * Create a new template. It is parsed immediately, so be prepared to handle exceptions about invalid templates here.
      */
     public SoutTemplate(Reader templateReader, SoutConfiguration configuration) throws IOException {
-        this.configuration = configuration;
-        var parser = new SoutTemplateParser(configuration);
+        var parser = new SoutTemplateParser(
+                configuration.openChar, configuration.separatorChar, configuration.closeChar, configuration.escapeChar,
+                new ModelTraveller(),
+                new DataConverter(configuration.typeRenderers, configuration.allowNullValues, configuration.allowNullLoops),
+                configuration.nameRenderers);
         rootNode = parser.parse(templateReader);
     }
 
+    /**
+     * Render a template.
+     *
+     * @param data         the model containing the data that should be filled in the template.
+     * @param outputWriter where the result will be written.
+     */
     public void render(Object data, Writer outputWriter) throws IOException, IllegalAccessException {
-        rootNode.render(data, outputWriter, configuration);
+        rootNode.render(data, outputWriter);
     }
 
     @Override

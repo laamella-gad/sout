@@ -15,8 +15,6 @@ public class SoutConfiguration {
     final List<TypeRenderer> typeRenderers;
     final boolean allowNullValues;
     final boolean allowNullLoops;
-    final DataConverter dataConverter;
-    final ModelTraveller modelTraveller;
 
     /**
      * @param openChar        the character that opens a name or loop, like "{" or "<"
@@ -40,7 +38,5 @@ public class SoutConfiguration {
         this.typeRenderers = new ArrayList<>(typeRenderers);
         this.allowNullValues = allowNullValues;
         this.allowNullLoops = allowNullLoops;
-        dataConverter = new DataConverter(this);
-        modelTraveller = new ModelTraveller();
     }
 }

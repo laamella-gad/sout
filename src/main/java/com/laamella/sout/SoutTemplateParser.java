@@ -2,18 +2,26 @@ package com.laamella.sout;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.util.List;
 
 class SoutTemplateParser {
     private final int openChar;
     private final int separatorChar;
     private final int closeChar;
     private final int escapeChar;
+    private final ModelTraveller modelTraveller;
+    private final DataConverter dataConverter;
+    private final List<NameRenderer> nameRenderers;
 
-    public SoutTemplateParser(SoutConfiguration configuration) {
-        openChar = configuration.openChar;
-        separatorChar = configuration.separatorChar;
-        closeChar = configuration.closeChar;
-        escapeChar = configuration.escapeChar;
+    public SoutTemplateParser(int openChar, int separatorChar, int closeChar, int escapeChar,
+                              ModelTraveller modelTraveller, DataConverter dataConverter, List<NameRenderer> nameRenderers) {
+        this.openChar = openChar;
+        this.separatorChar = separatorChar;
+        this.closeChar = closeChar;
+        this.escapeChar = escapeChar;
+        this.modelTraveller = modelTraveller;
+        this.dataConverter = dataConverter;
+        this.nameRenderers = nameRenderers;
     }
 
     enum State {READING_NAME, READING_TEXT}
@@ -106,15 +114,31 @@ class SoutTemplateParser {
                     }
                     case READING_NAME -> {
                         if (c == separatorChar) {
-                            LoopNode loopNode = new LoopNode(text.consume(), context.lastPosition());
+                            String name = text.consume();
+                            LoopNode loopNode = new LoopNode(name, context.lastPosition(), modelTraveller, dataConverter);
                             parseLoopNode(loopNode, context);
                             node.children.add(loopNode);
-                            loopNode.validate();
+                            int parts = loopNode.children.size();
+                            switch (parts) {
+                                case 1 -> loopNode.mainPart = (LoopPartNode) loopNode.children.get(0);
+                                case 2 -> {
+                                    loopNode.mainPart = (LoopPartNode) loopNode.children.get(0);
+                                    loopNode.separatorPart = (LoopPartNode) loopNode.children.get(1);
+                                }
+                                case 4 -> {
+                                    loopNode.leadIn = (LoopPartNode) loopNode.children.get(0);
+                                    loopNode.mainPart = (LoopPartNode) loopNode.children.get(1);
+                                    loopNode.separatorPart = (LoopPartNode) loopNode.children.get(2);
+                                    loopNode.leadOut = (LoopPartNode) loopNode.children.get(3);
+                                }
+                                // TODO 6 = special separator after the first and before the last element?
+                                default -> throw new IllegalArgumentException(String.format("Wrong amount of parts (%d) for loop %s.", parts, name));
+                            }
                             state = State.READING_TEXT;
                         } else if (c == openChar) {
                             throw new IOException(String.format("Unexpected open %c in name.", c));
                         } else if (c == closeChar) {
-                            node.children.add(new NameNode(text.consume(), context.lastPosition()));
+                            node.children.add(new NameNode(text.consume(), context.lastPosition(), nameRenderers, modelTraveller, dataConverter));
                             state = State.READING_TEXT;
                         } else {
                             text.append(c);

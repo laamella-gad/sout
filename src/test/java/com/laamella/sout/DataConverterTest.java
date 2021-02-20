@@ -13,9 +13,9 @@ import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.util.Lists.newArrayList;
 
+@SuppressWarnings("unchecked")
 public class DataConverterTest {
-    private final SoutConfiguration defaultConfiguration = new SoutConfiguration('{', '|', '}', '\\', emptyList(), emptyList(), true, true);
-    private final DataConverter dataConverter = new DataConverter(defaultConfiguration);
+    private final DataConverter dataConverter = new DataConverter(emptyList(), true, true);
 
     @Test
     public void listsGetConvertedToLists() {
@@ -65,9 +65,9 @@ public class DataConverterTest {
             }
             return false;
         };
-        var configuration = new SoutConfiguration('{', '|', '}', '\\', emptyList(), singletonList(specialTypeRenderer), true, true);
         var output = new StringWriter();
-        new DataConverter(configuration).renderAsText(123, output);
+        var dataConverter = new DataConverter(singletonList(specialTypeRenderer), true, true);
+        dataConverter.renderAsText(123, output);
         assertThat(output.toString()).isEqualTo("INT");
     }
 }

@@ -5,7 +5,6 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
-import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
 
 
@@ -16,26 +15,32 @@ abstract class Node {
         this.position = position;
     }
 
-    abstract void render(Object data, Writer output, SoutConfiguration configuration) throws IOException, IllegalAccessException;
+    abstract void render(Object data, Writer output) throws IOException, IllegalAccessException;
 }
 
 class NameNode extends Node {
-    final String name;
+    private final String name;
+    private final List<NameRenderer> nameRenderers;
+    private final ModelTraveller modelTraveller;
+    private final DataConverter dataConverter;
 
-    NameNode(String name, Position position) {
+    NameNode(String name, Position position, List<NameRenderer> nameRenderers, ModelTraveller modelTraveller, DataConverter dataConverter) {
         super(position);
         this.name = name;
+        this.nameRenderers = nameRenderers;
+        this.modelTraveller = modelTraveller;
+        this.dataConverter = dataConverter;
     }
 
     @Override
-    void render(Object data, Writer output, SoutConfiguration configuration) throws IOException, IllegalAccessException {
-        for (NameRenderer nameRenderer : configuration.nameRenderers) {
+    void render(Object data, Writer output) throws IOException, IllegalAccessException {
+        for (NameRenderer nameRenderer : nameRenderers) {
             if (nameRenderer.render(data, name, output)) {
                 return;
             }
         }
-        Object value = configuration.modelTraveller.evaluateNameOnModel(data, name);
-        configuration.dataConverter.renderAsText(value, output);
+        Object value = modelTraveller.evaluateNameOnModel(data, name);
+        dataConverter.renderAsText(value, output);
     }
 
     @Override
@@ -53,57 +58,42 @@ abstract class ContainerNode extends Node {
 }
 
 class LoopNode extends ContainerNode {
-    final String name;
+    private final String name;
+    private final ModelTraveller modelTraveller;
+    private final DataConverter dataConverter;
     LoopPartNode mainPart = null;
     LoopPartNode separatorPart = null;
     LoopPartNode leadIn = null;
     LoopPartNode leadOut = null;
 
-    LoopNode(String name, Position position) {
+    LoopNode(String name, Position position, ModelTraveller modelTraveller, DataConverter dataConverter) {
         super(position);
         this.name = name;
-    }
-
-    void validate() {
-        int parts = children.size();
-        switch (parts) {
-            case 1 -> mainPart = (LoopPartNode) children.get(0);
-            case 2 -> {
-                mainPart = (LoopPartNode) children.get(0);
-                separatorPart = (LoopPartNode) children.get(1);
-            }
-            case 4 -> {
-                leadIn = (LoopPartNode) children.get(0);
-                mainPart = (LoopPartNode) children.get(1);
-                separatorPart = (LoopPartNode) children.get(2);
-                leadOut = (LoopPartNode) children.get(3);
-            }
-            // TODO 6 = special separator after the first and before the last element?
-            default -> throw new IllegalArgumentException(format("Wrong amount of parts (%d) for loop %s.", parts, name));
-        }
+        this.modelTraveller = modelTraveller;
+        this.dataConverter = dataConverter;
     }
 
     @Override
-    public void render(Object data, Writer output, SoutConfiguration configuration) throws IOException, IllegalAccessException {
-        var listData = configuration.dataConverter.toIterator(configuration.modelTraveller.evaluateNameOnModel(data, name));
+    public void render(Object data, Writer outputWriter) throws IOException, IllegalAccessException {
+        var listData = dataConverter.toIterator(modelTraveller.evaluateNameOnModel(data, name));
 
         var hasItems = listData.hasNext();
 
         if (hasItems && leadIn != null) {
-            leadIn.render(data, output, configuration);
+            leadIn.render(data, outputWriter);
         }
 
         var printSeparator = false;
         while (listData.hasNext()) {
             var listElement = listData.next();
             if (printSeparator && separatorPart != null) {
-                separatorPart.render(listElement, output, configuration);
+                separatorPart.render(listElement, outputWriter);
             }
             printSeparator = true;
-            mainPart.render(listElement, output, configuration);
+            mainPart.render(listElement, outputWriter);
         }
         if (hasItems && leadOut != null) {
-            leadOut.render(data, output, configuration);
+            leadOut.render(data, outputWriter);
         }
     }
 
@@ -119,9 +109,9 @@ class LoopPartNode extends ContainerNode {
     }
 
     @Override
-    void render(Object data, Writer output, SoutConfiguration configuration) throws IOException, IllegalAccessException {
+    void render(Object data, Writer output) throws IOException, IllegalAccessException {
         for (var child : children) {
-            child.render(data, output, configuration);
+            child.render(data, output);
         }
     }
 
@@ -140,7 +130,7 @@ class TextNode extends Node {
     }
 
     @Override
-    public void render(Object data, Writer output, SoutConfiguration configuration) throws IOException {
+    public void render(Object data, Writer output) throws IOException {
         output.append(text);
     }
 
@@ -156,9 +146,9 @@ class RootNode extends ContainerNode {
     }
 
     @Override
-    public void render(Object data, Writer output, SoutConfiguration configuration) throws IOException, IllegalAccessException {
+    public void render(Object data, Writer output) throws IOException, IllegalAccessException {
         for (var child : children) {
-            child.render(data, output, configuration);
+            child.render(data, output);
         }
     }
 

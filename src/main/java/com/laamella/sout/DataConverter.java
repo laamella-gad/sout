@@ -11,15 +11,19 @@ import static java.util.Collections.emptyIterator;
 import static java.util.Collections.singletonList;
 
 class DataConverter {
-    private final SoutConfiguration configuration;
+    private final List<TypeRenderer> typeRenderers;
+    private final boolean allowNullValues;
+    private final boolean allowNullLoops;
 
-    DataConverter(SoutConfiguration configuration) {
-        this.configuration = configuration;
+    DataConverter(List<TypeRenderer> typeRenderers, boolean allowNullValues, boolean allowNullLoops) {
+        this.typeRenderers = typeRenderers;
+        this.allowNullValues = allowNullValues;
+        this.allowNullLoops = allowNullLoops;
     }
 
     Iterator<?> toIterator(Object model) {
         if (model == null) {
-            if (configuration.allowNullLoops) {
+            if (allowNullLoops) {
                 return emptyIterator();
             }
             throw new IllegalArgumentException("Null loop.");
@@ -42,17 +46,16 @@ class DataConverter {
 
     void renderAsText(Object model, Writer writer) throws IOException, IllegalAccessException {
         if (model == null) {
-            if (configuration.allowNullValues) {
+            if (allowNullValues) {
                 return;
             }
             throw new IllegalArgumentException("Null value.");
         }
-        for (TypeRenderer typeRenderer : configuration.typeRenderers) {
+        for (TypeRenderer typeRenderer : typeRenderers) {
             if (typeRenderer.write(model, writer)) {
                 return;
             }
         }
         writer.append(model.toString());
     }
-
 }
