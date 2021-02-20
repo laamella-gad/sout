@@ -49,11 +49,11 @@ public class ExamplesTest {
 
     @Test
     public void useACustomDateFormatter() throws IOException, IllegalAccessException {
-        var customDateHandler = new CustomTypeRenderer() {
+        var customDateRenderer = new CustomTypeRenderer() {
             @Override
             public boolean write(Object model, Writer outputWriter) throws IOException {
                 if (model instanceof Date) {
-                    String formattedDate = new SimpleDateFormat("dd-MM-yyyy").format((Date) model);
+                    var formattedDate = new SimpleDateFormat("dd-MM-yyyy").format((Date) model);
                     outputWriter.write(formattedDate);
                     return true;
                 }
@@ -61,7 +61,7 @@ public class ExamplesTest {
             }
         };
 
-        var configuration = new SoutConfiguration('{', '|', '}', '\\', null, customDateHandler, null);
+        var configuration = new SoutConfiguration('{', '|', '}', '\\', null, customDateRenderer, null);
         var template = new SoutTemplate(new StringReader("Date zero is {}"), configuration);
         var output = new StringWriter();
         template.render(new Date(0), output);
@@ -71,12 +71,12 @@ public class ExamplesTest {
     @Test
     public void useNameResolverToForwardToAnotherTemplate() throws IOException, IllegalAccessException {
         // The TemplateResolver stores a map of name->template.
-        var templateResolver = new TemplateRendererCustom();
-        var configuration = new SoutConfiguration('{', '|', '}', '\\', templateResolver, null, null);
+        var nestedTemplateRenderer = new NestedTemplateRenderer();
+        var configuration = new SoutConfiguration('{', '|', '}', '\\', nestedTemplateRenderer, null, null);
 
         // Put one template in the resolver, named "oei".
         var templateToResolve = new SoutTemplate(new StringReader("oei {name} oeiii"), configuration);
-        templateResolver.put("oei", templateToResolve);
+        nestedTemplateRenderer.put("oei", templateToResolve);
 
         // The name oei should trigger the TemplateWriter to render the template to the output.
         var template = new SoutTemplate(new StringReader("Hello {oei}"), configuration);
@@ -84,33 +84,72 @@ public class ExamplesTest {
         template.render(ImmutableMap.of("name", "Piet"), output);
         assertEquals("Hello oei Piet oeiii", output.toString());
     }
-}
 
-/**
- * A way to use templates inside templates.
- * <p>
- * Keeps a map of name->template,
- * and whenever one of these names is encountered in the template,
- * this will return the corresponding "sub"template,
- * and that will be rendered.
- */
-class TemplateRendererCustom implements CustomNameRenderer {
-    private final Map<String, SoutTemplate> templates = new HashMap<>();
+    /**
+     * A way to use templates inside templates.
+     * <p>
+     * Keeps a map of name->template,
+     * and whenever one of these names is encountered in the template,
+     * this will return the corresponding "sub"template,
+     * and that will be rendered.
+     */
+    static class NestedTemplateRenderer implements CustomNameRenderer {
+        private final Map<String, SoutTemplate> templates = new HashMap<>();
 
-    public void put(String name, SoutTemplate template) {
-        templates.put(name, template);
+        public void put(String name, SoutTemplate template) {
+            templates.put(name, template);
+        }
+
+        @Override
+        public boolean render(Object model, String name, Writer outputWriter) throws IOException, IllegalAccessException {
+            SoutTemplate template = templates.get(name);
+            if (template == null) {
+                return false;
+            }
+            template.render(model, outputWriter);
+            return true;
+        }
     }
 
-    @Override
-    public boolean render(Object model, String name, Writer outputWriter) throws IOException, IllegalAccessException {
-        SoutTemplate template = templates.get(name);
-        if (template == null) {
+
+    @Test
+    public void chainCustomTypeRenderers() throws IOException, IllegalAccessException {
+        CustomTypeRenderer dummyTypeRenderer = (model, outputWriter) -> false;
+
+        var customTypeRendererList = new CustomTypeRendererList(dummyTypeRenderer, dummyTypeRenderer, dummyTypeRenderer);
+
+        var configuration = new SoutConfiguration('{', '|', '}', '\\', null, customTypeRendererList, null);
+        // The renderers in the list are dummies, so nothing useful happens here:
+        var template = new SoutTemplate(new StringReader(""), configuration);
+        var output = new StringWriter();
+        template.render(null, output);
+        assertEquals("", output.toString());
+    }
+
+    /**
+     * A {@link CustomTypeRenderer} that holds a list of {@link CustomTypeRenderer}s that are tried in order.
+     * A class like this can easily be built for {@link CustomNameRenderer} or {@link com.laamella.sout.CustomIteratorFactory}.
+     */
+    static class CustomTypeRendererList implements CustomTypeRenderer {
+        private final CustomTypeRenderer[] renderers;
+
+        CustomTypeRendererList(CustomTypeRenderer... renderers) {
+            this.renderers = renderers;
+        }
+
+        @Override
+        public boolean write(Object model, Writer outputWriter) throws IOException, IllegalAccessException {
+            for (CustomTypeRenderer renderer : renderers) {
+                if (renderer.write(model, outputWriter)) {
+                    return true;
+                }
+            }
             return false;
         }
-        template.render(model, outputWriter);
-        return true;
     }
+
 }
+
 
 // A test model:
 class Letter {

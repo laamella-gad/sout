@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SoutTemplateTest {
@@ -100,8 +101,53 @@ public class SoutTemplateTest {
         assertRendered("...\\s...", parse("...\\s..."), null);
     }
 
+    @Test
+    public void renderStringToText() throws IOException, IllegalAccessException {
+        var selfTemplate = parse("{}");
+        assertRendered("abc", selfTemplate, "abc");
+    }
+
+    @Test
+    public void renderIntToText() throws IOException, IllegalAccessException {
+        var selfTemplate = parse("{}");
+        assertRendered("123", selfTemplate, 123);
+    }
+
+    @Test
+    public void nullsAreNotAllowedInTheModel() throws IOException {
+        var selfTemplate = parse("{}");
+        assertThatThrownBy(() -> selfTemplate.render(null, new StringWriter()))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Null value.");
+    }
+
+    @Test
+    public void specialNullRendererAllowsNullsInTheModel() throws IOException, IllegalAccessException {
+        CustomTypeRenderer allowNullCustomTypeRenderer = (model, outputWriter) -> model == null;
+        var configuration = new SoutConfiguration('{', '|', '}', '\\', null, allowNullCustomTypeRenderer, null);
+        var selfTemplate = parse("{}", configuration);
+        assertRendered("", selfTemplate, null);
+    }
+
+    @Test
+    public void specialRenderer() throws IOException, IllegalAccessException {
+        CustomTypeRenderer specialCustomTypeRenderer = (value, output) -> {
+            if (value instanceof Integer) {
+                output.append("INT");
+                return true;
+            }
+            return false;
+        };
+        var configuration = new SoutConfiguration('{', '|', '}', '\\', null, specialCustomTypeRenderer, null);
+        var selfTemplate = parse("{}", configuration);
+        assertRendered("INT", selfTemplate, 123);
+    }
+
     private SoutTemplate parse(String template) throws IOException {
-        var configuration = new SoutConfiguration('{', '|', '}', '\\', null, null, null);
+        return parse(template, new SoutConfiguration('{', '|', '}', '\\', null, null, null));
+    }
+
+    private SoutTemplate parse(String template, SoutConfiguration configuration) throws IOException {
         return new SoutTemplate(new StringReader(template), configuration);
     }
 
@@ -110,5 +156,4 @@ public class SoutTemplateTest {
         template.render(data, output);
         assertEquals(expected, output.toString());
     }
-
 }

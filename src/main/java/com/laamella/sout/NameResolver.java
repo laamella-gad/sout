@@ -10,11 +10,11 @@ import java.util.function.Function;
 @SuppressWarnings("unchecked")
 class NameResolver {
 
-    Object evaluateNameOnModel(Object model, String complexName) throws IllegalAccessException {
+    Object resolveNameOnModel(Object model, String complexName) throws IllegalAccessException {
         int dotIndex = complexName.indexOf('.');
         if (dotIndex >= 0) {
             Object nestedValue = innerEvaluateNameOnModel(model, complexName.substring(0, dotIndex));
-            return evaluateNameOnModel(nestedValue, complexName.substring(dotIndex + 1));
+            return resolveNameOnModel(nestedValue, complexName.substring(dotIndex + 1));
         }
         return innerEvaluateNameOnModel(model, complexName);
     }

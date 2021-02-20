@@ -14,34 +14,35 @@ public class NameResolverTest {
 
     @Test
     public void findValueOfMapEntry() throws IllegalAccessException {
-        Object value = nameResolver.evaluateNameOnModel(ImmutableMap.of("x", "y"), "x");
+        Object value = nameResolver.resolveNameOnModel(ImmutableMap.of("x", "y"), "x");
         assertThat(value).isEqualTo("y");
     }
 
     @Test
     public void findValueOfFunctionApplication() throws IllegalAccessException {
-        Object value = nameResolver.evaluateNameOnModel((Function<String, String>) o -> o + "woo", "name");
+        Object value = nameResolver.resolveNameOnModel((Function<String, String>) o -> o + "woo", "name");
         assertThat(value).isEqualTo("namewoo");
     }
 
     @Test
     public void findValueOfField() throws IllegalAccessException {
         TestModel testModel = new TestModel();
-        Object value = nameResolver.evaluateNameOnModel(testModel, "field");
+        Object value = nameResolver.resolveNameOnModel(testModel, "field");
         assertThat(value).isEqualTo("*field*");
     }
 
     @Test
     public void findValueOfGetter() throws IllegalAccessException {
         TestModel testModel = new TestModel();
-        Object value = nameResolver.evaluateNameOnModel(testModel, "getter");
+        Object value = nameResolver.resolveNameOnModel(testModel, "getter");
         assertThat(value).isEqualTo("*getter*");
     }
 
     @Test
     public void findValueOfIsser() throws IllegalAccessException {
         TestModel testModel = new TestModel();
-        Object value = nameResolver.evaluateNameOnModel(testModel, "isser");
+        Object value = nameResolver.resolveNameOnModel(testModel, "isser");
         assertThat(value).isEqualTo(TRUE);
     }
+
 }

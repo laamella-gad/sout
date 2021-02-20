@@ -2,7 +2,6 @@ package com.laamella.sout;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.stream.Collectors.joining;
@@ -19,11 +18,11 @@ abstract class Renderer {
 
 class NameRenderer extends Renderer {
     private final String name;
-    private final CustomNameRenderer customNameRenderer;
     private final NameResolver nameResolver;
+    private final CustomNameRenderer customNameRenderer;
     private final CustomTypeRenderer customTypeRenderer;
 
-    NameRenderer(String name, Position position, CustomNameRenderer customNameRenderer, NameResolver nameResolver, CustomTypeRenderer customTypeRenderer) {
+    NameRenderer(String name, Position position, NameResolver nameResolver, CustomNameRenderer customNameRenderer, CustomTypeRenderer customTypeRenderer) {
         super(position);
         this.name = name;
         this.customNameRenderer = customNameRenderer;
@@ -36,7 +35,7 @@ class NameRenderer extends Renderer {
         if (customNameRenderer.render(model, name, outputWriter)) {
             return;
         }
-        Object subModel = nameResolver.evaluateNameOnModel(model, name);
+        Object subModel = nameResolver.resolveNameOnModel(model, name);
         if (customTypeRenderer.write(subModel, outputWriter)) {
             return;
         }
@@ -52,38 +51,52 @@ class NameRenderer extends Renderer {
     }
 }
 
-abstract class ContainerRenderer extends Renderer {
-    final List<Renderer> children = new ArrayList<>();
+class ContainerRenderer extends Renderer {
+    private final List<Renderer> children;
 
-    ContainerRenderer(Position position) {
+    ContainerRenderer(Position position, List<Renderer> children) {
         super(position);
+        this.children = children;
+    }
+
+    @Override
+    void render(Object model, Writer outputWriter) throws IOException, IllegalAccessException {
+        for (var child : children) {
+            child.render(model, outputWriter);
+        }
+    }
+
+    @Override
+    public String toString() {
+        return children.stream().map(Object::toString).collect(joining());
     }
 }
 
-class LoopRenderer extends ContainerRenderer {
+class LoopRenderer extends Renderer {
     private final String name;
     private final NameResolver nameResolver;
     private final IteratorFactory iteratorFactory;
-    private final CustomIteratorFactory customIteratorFactory;
-    LoopPartRenderer mainPart = null;
-    LoopPartRenderer separatorPart = null;
-    LoopPartRenderer leadIn = null;
-    LoopPartRenderer leadOut = null;
+    private final ContainerRenderer mainPart;
+    private final ContainerRenderer separatorPart;
+    private final ContainerRenderer leadIn;
+    private final ContainerRenderer leadOut;
 
-    LoopRenderer(String name, Position position, NameResolver nameResolver, IteratorFactory iteratorFactory, CustomIteratorFactory customIteratorFactory) {
+    LoopRenderer(String name, Position position, NameResolver nameResolver, IteratorFactory iteratorFactory,
+                 ContainerRenderer mainPart, ContainerRenderer separatorPart, ContainerRenderer leadIn, ContainerRenderer leadOut) {
         super(position);
         this.name = name;
         this.nameResolver = nameResolver;
         this.iteratorFactory = iteratorFactory;
-        this.customIteratorFactory = customIteratorFactory;
+        this.mainPart = mainPart;
+        this.separatorPart = separatorPart;
+        this.leadIn = leadIn;
+        this.leadOut = leadOut;
     }
 
     @Override
     public void render(Object model, Writer outputWriter) throws IOException, IllegalAccessException {
-        var iterator = customIteratorFactory.toIterator(model);
-        if (iterator == null) {
-            iterator = iteratorFactory.toIterator(nameResolver.evaluateNameOnModel(model, name));
-        }
+        var collection = nameResolver.resolveNameOnModel(model, name);
+        var iterator = iteratorFactory.toIterator(collection);
         var hasItems = iterator.hasNext();
 
         if (hasItems && leadIn != null) {
@@ -106,25 +119,12 @@ class LoopRenderer extends ContainerRenderer {
 
     @Override
     public String toString() {
-        return '❰' + name + "❚" + children.stream().map(Object::toString).collect(joining("❚")) + '❱';
-    }
-}
-
-class LoopPartRenderer extends ContainerRenderer {
-    LoopPartRenderer(Position position) {
-        super(position);
-    }
-
-    @Override
-    void render(Object model, Writer outputWriter) throws IOException, IllegalAccessException {
-        for (var child : children) {
-            child.render(model, outputWriter);
-        }
-    }
-
-    @Override
-    public String toString() {
-        return children.stream().map(Object::toString).collect(joining());
+        return '❰' + name +
+                (leadIn != null ? "❚" + leadIn : "") +
+                "❚" + mainPart +
+                (separatorPart != null ? "❚" + separatorPart : "") +
+                (leadOut != null ? "❚" + leadOut : "")
+                + '❱';
     }
 }
 
@@ -147,20 +147,3 @@ class TextRenderer extends Renderer {
     }
 }
 
-class RootRenderer extends ContainerRenderer {
-    RootRenderer() {
-        super(new Position(0, 0));
-    }
-
-    @Override
-    public void render(Object model, Writer outputWriter) throws IOException, IllegalAccessException {
-        for (var child : children) {
-            child.render(model, outputWriter);
-        }
-    }
-
-    @Override
-    public String toString() {
-        return children.stream().map(Object::toString).collect(joining());
-    }
-}

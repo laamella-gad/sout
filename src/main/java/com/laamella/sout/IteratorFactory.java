@@ -8,8 +8,19 @@ import static java.util.Arrays.stream;
 import static java.util.Collections.singletonList;
 
 class IteratorFactory {
+    private final CustomIteratorFactory customIteratorFactory;
+
+    IteratorFactory(CustomIteratorFactory customIteratorFactory) {
+        this.customIteratorFactory = customIteratorFactory;
+    }
+
     Iterator<?> toIterator(Object model) {
-        if (model instanceof List) {
+        Iterator<?> iterator = customIteratorFactory.toIterator(model);
+        if (iterator != null) {
+            return iterator;
+        } else if (model == null) {
+            throw new IllegalArgumentException("Trying to loop over null.");
+        } else if (model instanceof List) {
             return ((List<?>) model).iterator();
         } else if (model instanceof Object[]) {
             return stream((Object[]) model).iterator();
