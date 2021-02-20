@@ -14,10 +14,7 @@ public class NameRendererTest {
 
     @Test
     public void renderStringToText() throws IOException, IllegalAccessException {
-        NameRenderer nameNode = new NameRenderer("", new Position(0, 0), noCustomNameRenderer,
-                new NameResolver(),
-                noCustomTypeRenderer
-        );
+        NameRenderer nameNode = new NameRenderer("", new Position(0, 0), noCustomNameRenderer, new NameResolver(), noCustomTypeRenderer);
 
         var output = new StringWriter();
         nameNode.render("abc", output);
@@ -26,10 +23,7 @@ public class NameRendererTest {
 
     @Test
     public void renderIntToText() throws IOException, IllegalAccessException {
-        NameRenderer nameNode = new NameRenderer("", new Position(0, 0), noCustomNameRenderer,
-                new NameResolver(),
-                noCustomTypeRenderer
-        );
+        NameRenderer nameNode = new NameRenderer("", new Position(0, 0), noCustomNameRenderer, new NameResolver(), noCustomTypeRenderer);
         var output = new StringWriter();
         nameNode.render(123, output);
         assertThat(output.toString()).isEqualTo("123");
@@ -37,9 +31,7 @@ public class NameRendererTest {
 
     @Test
     public void nullsAreNotAllowedInTheModel() {
-        NameRenderer nameNode = new NameRenderer("", new Position(0, 0), noCustomNameRenderer,
-                new NameResolver(),
-                noCustomTypeRenderer);
+        NameRenderer nameNode = new NameRenderer("", new Position(0, 0), noCustomNameRenderer, new NameResolver(), noCustomTypeRenderer);
         assertThatThrownBy(() -> nameNode.render(null, new StringWriter()))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Null value.");
@@ -48,9 +40,7 @@ public class NameRendererTest {
     @Test
     public void specialNullRendererAllowsNullsInTheModel() throws IOException, IllegalAccessException {
         CustomTypeRenderer allowNullCustomTypeRenderer = (model, outputWriter) -> model == null;
-        NameRenderer nameNode = new NameRenderer("", new Position(0, 0), noCustomNameRenderer,
-                new NameResolver(),
-                allowNullCustomTypeRenderer);
+        NameRenderer nameNode = new NameRenderer("", new Position(0, 0), noCustomNameRenderer, new NameResolver(), allowNullCustomTypeRenderer);
         var output = new StringWriter();
         nameNode.render(null, output);
         assertThat(output.toString()).isEqualTo("");
@@ -65,9 +55,7 @@ public class NameRendererTest {
             }
             return false;
         };
-        NameRenderer nameNode = new NameRenderer("", new Position(0, 0), noCustomNameRenderer,
-                new NameResolver(),
-                specialCustomTypeRenderer);
+        NameRenderer nameNode = new NameRenderer("", new Position(0, 0), noCustomNameRenderer, new NameResolver(), specialCustomTypeRenderer);
 
         var output = new StringWriter();
         nameNode.render(123, output);
