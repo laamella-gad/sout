@@ -25,9 +25,51 @@ public class IteratorFactoryTest {
     }
 
     @Test
-    public void arraysGetConvertedToLists() {
+    public void byteArraysGetConvertedToLists() {
+        var objects = (List<Byte>) newArrayList(iteratorFactory.toIterator(new byte[]{1, 2, 3}));
+        assertThat(objects).containsExactly((byte) 1, (byte) 2, (byte) 3);
+    }
+
+    @Test
+    public void shortArraysGetConvertedToLists() {
+        var objects = (List<Short>) newArrayList(iteratorFactory.toIterator(new short[]{1, 2, 3}));
+        assertThat(objects).containsExactly((short) 1, (short) 2, (short) 3);
+    }
+
+    @Test
+    public void intArraysGetConvertedToLists() {
         var objects = (List<Integer>) newArrayList(iteratorFactory.toIterator(new int[]{1, 2, 3}));
         assertThat(objects).containsExactly(1, 2, 3);
+    }
+
+    @Test
+    public void longArraysGetConvertedToLists() {
+        var objects = (List<Long>) newArrayList(iteratorFactory.toIterator(new long[]{1, 2, 3}));
+        assertThat(objects).containsExactly(1L, 2L, 3L);
+    }
+
+    @Test
+    public void floatArraysGetConvertedToLists() {
+        var objects = (List<Float>) newArrayList(iteratorFactory.toIterator(new float[]{1.1f, 2.2f, 3.3f}));
+        assertThat(objects).containsExactly(1.1f, 2.2f, 3.3f);
+    }
+
+    @Test
+    public void doubleArraysGetConvertedToLists() {
+        var objects = (List<Double>) newArrayList(iteratorFactory.toIterator(new double[]{1.1, 2.2, 3.3}));
+        assertThat(objects).containsExactly(1.1, 2.2, 3.3);
+    }
+
+    @Test
+    public void booleanArraysGetConvertedToLists() {
+        var objects = (List<Boolean>) newArrayList(iteratorFactory.toIterator(new boolean[]{true, false, true}));
+        assertThat(objects).containsExactly(true, false, true);
+    }
+
+    @Test
+    public void charArraysGetConvertedToLists() {
+        var objects = (List<Character>) newArrayList(iteratorFactory.toIterator(new char[]{'1', '2', '3'}));
+        assertThat(objects).containsExactly('1', '2', '3');
     }
 
     @Test
