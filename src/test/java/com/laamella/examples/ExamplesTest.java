@@ -8,12 +8,15 @@ import com.laamella.sout.SoutTemplate;
 import org.junit.jupiter.api.Test;
 
 import java.io.*;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ExamplesTest {
@@ -27,18 +30,18 @@ public class ExamplesTest {
     }
 
     @Test
-    public void loadTheTemplateFromTheClassPath() throws IOException, IllegalAccessException {
-        try (var templateInputStream = getClass().getResource("/templates/hello.sout").openStream();
-             var reader = new InputStreamReader(templateInputStream, UTF_8)) {
+    public void loadTheTemplateFromTheClassPath() throws IOException, IllegalAccessException, URISyntaxException {
+        Path templatePath = Paths.get(getClass().getResource("/templates/hello.sout").toURI());
+        try (BufferedReader reader = Files.newBufferedReader(templatePath)) {
             var configuration = new SoutConfiguration('<', '|', '>', '\\', null, null, null);
             var template = new SoutTemplate(reader, configuration);
             var output = new StringWriter();
-            template.render(new Letter("Piet", "Hopscotch inc.", new Item("ball", 14.55), new Item("Triangle", 3.99)), output);
+            template.render(new Letter("Piet", "Hopscotch inc.", new Item("Ball", 14.55), new Item("Triangle", 3.99)), output);
             assertEquals("""
                     Hello dear Piet,
 
                     It would be great if you paid for the items you ordered.
-                    ball €14.55
+                    Ball €14.55
                     Triangle €3.99
 
                     Thanks a lot,
