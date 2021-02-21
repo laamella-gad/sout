@@ -124,7 +124,7 @@ public class SoutTemplateTest {
 
     @Test
     public void specialNullRendererAllowsNullsInTheModel() throws IOException, IllegalAccessException {
-        CustomTypeRenderer allowNullCustomTypeRenderer = (model, outputWriter, userData) -> model == null;
+        CustomTypeRenderer allowNullCustomTypeRenderer = (model, scope, outputWriter) -> model == null;
         var configuration = new SoutConfiguration('{', '|', '}', '\\', null, allowNullCustomTypeRenderer, null);
         var selfTemplate = parse("{}", configuration);
         assertRendered("", selfTemplate, null);
@@ -132,8 +132,8 @@ public class SoutTemplateTest {
 
     @Test
     public void specialRenderer() throws IOException, IllegalAccessException {
-        CustomTypeRenderer specialCustomTypeRenderer = (value, output, userData) -> {
-            if (value instanceof Integer) {
+        CustomTypeRenderer specialCustomTypeRenderer = (model, scope, output) -> {
+            if (model instanceof Integer) {
                 output.append("INT");
                 return true;
             }

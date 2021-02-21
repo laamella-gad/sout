@@ -1,10 +1,7 @@
 package com.laamella.examples;
 
 import com.google.common.collect.ImmutableMap;
-import com.laamella.sout.CustomNameRenderer;
-import com.laamella.sout.CustomTypeRenderer;
-import com.laamella.sout.SoutConfiguration;
-import com.laamella.sout.SoutTemplate;
+import com.laamella.sout.*;
 import org.junit.jupiter.api.Test;
 
 import java.io.*;
@@ -54,7 +51,7 @@ public class ExamplesTest {
     public void useACustomDateFormatter() throws IOException, IllegalAccessException {
         var customDateRenderer = new CustomTypeRenderer() {
             @Override
-            public boolean write(Object model, Writer outputWriter, Map<String, Object> userData) throws IOException {
+            public boolean write(Object model, Scope scope, Writer outputWriter) throws IOException {
                 if (model instanceof Date) {
                     var formattedDate = new SimpleDateFormat("dd-MM-yyyy").format((Date) model);
                     outputWriter.write(formattedDate);
@@ -104,12 +101,12 @@ public class ExamplesTest {
         }
 
         @Override
-        public boolean render(Object model, String name, Writer outputWriter, Map<String, Object> userData) throws IOException, IllegalAccessException {
+        public boolean render(Object model, String name, Scope scope, Writer outputWriter) throws IOException, IllegalAccessException {
             SoutTemplate template = templates.get(name);
             if (template == null) {
                 return false;
             }
-            template.render(model, outputWriter, userData);
+            template.render(model, outputWriter);
             return true;
         }
     }
@@ -117,7 +114,7 @@ public class ExamplesTest {
 
     @Test
     public void chainCustomTypeRenderers() throws IOException, IllegalAccessException {
-        CustomTypeRenderer dummyTypeRenderer = (model, outputWriter, userData) -> false;
+        CustomTypeRenderer dummyTypeRenderer = (model, scope, outputWriter) -> false;
 
         var customTypeRendererList = new CustomTypeRendererList(dummyTypeRenderer, dummyTypeRenderer, dummyTypeRenderer);
 
@@ -141,9 +138,9 @@ public class ExamplesTest {
         }
 
         @Override
-        public boolean write(Object model, Writer outputWriter, Map<String, Object> userData) throws IOException, IllegalAccessException {
+        public boolean write(Object model, Scope scope, Writer outputWriter) throws IOException, IllegalAccessException {
             for (CustomTypeRenderer renderer : renderers) {
-                if (renderer.write(model, outputWriter, userData)) {
+                if (renderer.write(model, scope, outputWriter)) {
                     return true;
                 }
             }
@@ -165,13 +162,12 @@ public class ExamplesTest {
 
     static class CounterRenderer implements CustomNameRenderer {
         @Override
-        public boolean render(Object model, String name, Writer outputWriter, Map<String, Object> userData) throws IOException {
+        public boolean render(Object model, String name, Scope scope, Writer outputWriter) throws IOException {
             // "startsWith" so that you can define different counters like "{counter1}{counter-tiles}{counterABC}"
             if (name.startsWith("counter")) {
-                // Use the userData map instead of a field so that the counter is reset every render.
-                Integer count = (Integer) userData.getOrDefault(name, 1);
-                userData.put(name, count + 1);
+                Integer count = scope.getVariable(name, 1);
                 outputWriter.write("" + count);
+                scope.updateVariable(name, count + 1);
                 return true;
             }
             return false;

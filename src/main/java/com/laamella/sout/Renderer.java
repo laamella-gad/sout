@@ -2,8 +2,8 @@ package com.laamella.sout;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static java.util.stream.Collectors.joining;
 
@@ -14,7 +14,7 @@ abstract class Renderer {
         this.position = position;
     }
 
-    abstract void render(Object model, Writer outputWriter, Map<String, Object> userData) throws IOException, IllegalAccessException;
+    abstract void render(Object model, Scope scope, Writer outputWriter) throws IOException, IllegalAccessException;
 }
 
 class NameRenderer extends Renderer {
@@ -32,12 +32,12 @@ class NameRenderer extends Renderer {
     }
 
     @Override
-    void render(Object model, Writer outputWriter, Map<String, Object> userData) throws IOException, IllegalAccessException {
-        if (customNameRenderer.render(model, name, outputWriter, userData)) {
+    void render(Object model, Scope scope, Writer outputWriter) throws IOException, IllegalAccessException {
+        if (customNameRenderer.render(model, name, scope, outputWriter)) {
             return;
         }
         Object subModel = nameResolver.resolveComplexNameOnModel(model, name);
-        if (customTypeRenderer.write(subModel, outputWriter, userData)) {
+        if (customTypeRenderer.write(subModel, scope, outputWriter)) {
             return;
         }
         if (subModel == null) {
@@ -61,9 +61,9 @@ class ContainerRenderer extends Renderer {
     }
 
     @Override
-    void render(Object model, Writer outputWriter, Map<String, Object> userData) throws IOException, IllegalAccessException {
+    void render(Object model, Scope scope, Writer outputWriter) throws IOException, IllegalAccessException {
         for (var child : children) {
-            child.render(model, outputWriter, userData);
+            child.render(model, scope, outputWriter);
         }
     }
 
@@ -95,26 +95,30 @@ class LoopRenderer extends Renderer {
     }
 
     @Override
-    public void render(Object model, Writer outputWriter, Map<String, Object> userData) throws IOException, IllegalAccessException {
+    public void render(Object model, Scope scope, Writer outputWriter) throws IOException, IllegalAccessException {
         var collection = nameResolver.resolveComplexNameOnModel(model, name);
-        var iterator = iteratorFactory.toIterator(collection, userData);
-        var hasItems = iterator.hasNext();
+        var iterator = iteratorFactory.toIterator(collection, scope);
+        if (!iterator.hasNext()) {
+            // Empty collection, nothing to do.
+            return;
+        }
+        var loopScope = new Scope(scope, new HashMap<>());
 
-        if (hasItems && leadIn != null) {
-            leadIn.render(model, outputWriter, userData);
+        if (leadIn != null) {
+            leadIn.render(model, loopScope, outputWriter);
         }
 
         var printSeparator = false;
         while (iterator.hasNext()) {
             var listElement = iterator.next();
             if (printSeparator && separatorPart != null) {
-                separatorPart.render(listElement, outputWriter, userData);
+                separatorPart.render(listElement, loopScope, outputWriter);
             }
             printSeparator = true;
-            mainPart.render(listElement, outputWriter, userData);
+            mainPart.render(listElement, loopScope, outputWriter);
         }
-        if (hasItems && leadOut != null) {
-            leadOut.render(model, outputWriter, userData);
+        if (leadOut != null) {
+            leadOut.render(model, loopScope, outputWriter);
         }
     }
 
@@ -138,7 +142,7 @@ class TextRenderer extends Renderer {
     }
 
     @Override
-    public void render(Object model, Writer outputWriter, Map<String, Object> userData) throws IOException {
+    public void render(Object model, Scope scope, Writer outputWriter) throws IOException {
         outputWriter.append(text);
     }
 

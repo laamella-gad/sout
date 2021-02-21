@@ -37,12 +37,13 @@ public class SoutTemplate {
     /**
      * Render a template.
      *
-     * @param data         the model containing the data that should be filled in the template.
-     * @param outputWriter where the result will be written.
-     * @param userData     a key->value store where custom renderers and factories can store their state. Pass it if you want to put some values in before rendering.
+     * @param data            the model containing the data that should be filled in the template.
+     * @param outputWriter    where the result will be written.
+     * @param globalVariables a key->value store where custom renderers and factories can store their state.
+     *                        Pass it if you want to initialize some variables before rendering.
      */
-    public void render(Object data, Writer outputWriter, Map<String, Object> userData) throws IOException, IllegalAccessException {
-        rootRenderer.render(data, outputWriter, userData);
+    public void render(Object data, Writer outputWriter, Map<String, Object> globalVariables) throws IOException, IllegalAccessException {
+        rootRenderer.render(data, new Scope(null, globalVariables), outputWriter);
     }
 
     @Override
