@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.HashMap;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -176,6 +177,43 @@ public class SoutTemplateTest {
         assertThatThrownBy(() -> parse("{abc|def|ghi|jkl}"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Wrong amount of parts (3) for loop abc.");
+    }
+
+    @Test
+    public void loopingOverNull() throws IOException {
+        var selfLoopTemplate = parse("{|}");
+        assertThatThrownBy(() -> selfLoopTemplate.render(null, new StringWriter()))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Trying to loop over null.");
+    }
+
+    @Test
+    public void cantFindNameOnNullModel() throws IOException {
+        var template = parse("{abc}");
+        assertThatThrownBy(() -> template.render(null, new StringWriter()))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessage("abc not found on null object.");
+    }
+
+    @Test
+    public void cantFindNameInMap() throws IOException {
+        var template = parse("{abc}");
+
+        assertThatThrownBy(() -> template.render(new HashMap<>(), new StringWriter()))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("abc not found in map {}.");
+    }
+
+    @Test
+    public void resolvedValueIsNull() throws IOException {
+        var template = parse("{abc}");
+
+        var model = new HashMap<String, Object>();
+        model.put("abc", null);
+
+        assertThatThrownBy(() -> template.render(model, new StringWriter()))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Null value.");
     }
 
 

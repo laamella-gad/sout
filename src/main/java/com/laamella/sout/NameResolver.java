@@ -31,11 +31,10 @@ class NameResolver {
         // Find name in the keys of a map.
         if (target instanceof Map) {
             var map = (Map<String, Object>) target;
-            var value = map.get(name);
-            if (value == null) {
-                throw new IllegalArgumentException(String.format("%s not found in map %s", name, target));
+            if (map.containsKey(name)) {
+                return map.get(name);
             }
-            return value;
+            throw new IllegalArgumentException(String.format("%s not found in map %s.", name, target));
         }
         // Find value by applying the target function to the key.
         if (target instanceof Function) {
