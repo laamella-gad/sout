@@ -1,19 +1,21 @@
 package com.laamella.sout;
 
+import java.util.HashMap;
 import java.util.Map;
 
-public class Scope {
-    public final Scope parentScope;
-    private final Map<String, Object> variables;
+import static java.util.Objects.requireNonNull;
 
-    Scope(Scope parentScope, Map<String, Object> variables) {
+public class Scope {
+    private final Scope parentScope;
+    private final Map<String, Object> variables = new HashMap<>();
+
+    Scope(Scope parentScope) {
         this.parentScope = parentScope;
-        this.variables = variables;
     }
 
     @SuppressWarnings("unchecked")
     public <T> T getVariable(String name, T def) {
-        var nameScope = findScopeContainingName(name);
+        var nameScope = findScopeContainingName(requireNonNull(name));
         if (nameScope == null) {
             variables.put(name, def);
             return def;
@@ -22,7 +24,7 @@ public class Scope {
     }
 
     private Scope findScopeContainingName(String name) {
-        if (variables.containsKey(name)) {
+        if (variables.containsKey(requireNonNull(name))) {
             return this;
         }
         if (parentScope == null) {
@@ -32,7 +34,7 @@ public class Scope {
     }
 
     public <T> T updateVariable(String name, T newValue) {
-        var scope = findScopeContainingName(name);
+        var scope = findScopeContainingName(requireNonNull(name));
         if (scope == null) {
             throw new IllegalArgumentException(String.format("Variable %s not found.", name));
         }
@@ -41,10 +43,11 @@ public class Scope {
     }
 
     public void setLocalVariable(String name, Object value) {
-        variables.put(name, value);
+        variables.put(requireNonNull(name), value);
     }
 
     public void setGlobalVariable(String name, Object value) {
+        requireNonNull(name);
         if (parentScope == null) {
             variables.put(name, value);
         } else {

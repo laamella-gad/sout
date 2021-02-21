@@ -4,7 +4,6 @@ import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.Test;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -18,7 +17,7 @@ import static org.assertj.core.util.Lists.newArrayList;
 @SuppressWarnings("unchecked")
 public class IteratorFactoryTest {
     private final IteratorFactory iteratorFactory = new IteratorFactory((model, scope) -> null);
-    private final Scope scope = new Scope(null, new HashMap<>());
+    private final Scope scope = new Scope(null);
 
     @Test
     public void listsGetConvertedToLists() {

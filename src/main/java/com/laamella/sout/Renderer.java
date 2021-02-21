@@ -2,7 +2,6 @@ package com.laamella.sout;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.HashMap;
 import java.util.List;
 
 import static java.util.stream.Collectors.joining;
@@ -102,7 +101,7 @@ class LoopRenderer extends Renderer {
             // Empty collection, nothing to do.
             return;
         }
-        var loopScope = new Scope(scope, new HashMap<>());
+        var loopScope = new Scope(scope);
 
         if (leadIn != null) {
             leadIn.render(model, loopScope, outputWriter);
