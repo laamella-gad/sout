@@ -7,8 +7,7 @@ This one can be learned in five minutes. Here we go:
 2. create a new template with `new SoutTemplate(template, configuration)`
 3. render the template by giving it your model: `template.render(model, output)`
 
-Delimiters are fully configurable. Let's say we have... `<` `|` `>` `\\` for opening brace, separator, closing brace,
-and escape character.
+Delimiters are fully configurable. Let's say we have... `<` `|` `>` for opening brace, separator, and closing brace.
 
 With these delimiters, a template would look
 like [this sample](https://github.com/matozoid/sout/blob/master/src/test/resources/templates/hello.sout).
@@ -42,12 +41,17 @@ people -> [
     { name -> "Piet" },
     { name -> "Klaas" }
 ]
+jobs -> [ "janitor", "cleaner" ]
 company -> "Laamella Gad"
 ```
 
 `Hello <people|<name>, >` will output `Hello Piet, Klaas, `. Note the comma at the end.
 
 `Hello <people|<name>|, >` will output `Hello Piet, Klaas`. Note how the comma is now a correct separator.
+
+`Available jobs: <jobs|<>|, >.` will output `Available jobs: janitor, cleaner.`. Since the strings we want to render are
+directly contained in the jobs list, we can use `<>` to say: the direct list element please, no need to look for a value
+on it.
 
 `<people|Hello |<name>|, |! Welcome to <company>!>` will output `Hello Piet, Klaas! Welcome to Laamella Gad!`. If there
 were no people in the list, Hello and the welcome part wouldn't be rendered.
