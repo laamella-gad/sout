@@ -61,7 +61,7 @@ class SoutTemplateParser {
         var renderers = new ArrayList<Renderer>();
         int c = parseRenderersIntoList(renderers, false, new Context(template));
         if (c == closeChar) {
-            throw new IOException(String.format("Unexpected closing %c at top level.", c));
+            throw new IllegalStateException(String.format("Unexpected closing %c at top level.", c));
         }
         return new ContainerRenderer(new Position(0, 0), renderers);
     }
@@ -75,7 +75,7 @@ class SoutTemplateParser {
             c = context.read();
             if (c == -1) {
                 switch (state) {
-                    case READING_NAME -> throw new IOException(String.format("Name %s was not closed before end of file.", text.consume()));
+                    case READING_NAME -> throw new IllegalStateException(String.format("Name %s was not closed before end of file.", text.consume()));
                     case READING_TEXT -> renderers.add(new TextRenderer(text.consume(), context.lastPosition()));
                 }
                 return c;
@@ -121,7 +121,7 @@ class SoutTemplateParser {
                             renderers.add(loopNode);
                             state = State.READING_TEXT;
                         } else if (c == openChar) {
-                            throw new IOException(String.format("Unexpected open %c in name.", c));
+                            throw new IllegalStateException(String.format("Unexpected open %c in name.", c));
                         } else if (c == closeChar) {
                             renderers.add(new NameRenderer(text.consume(), context.lastPosition(), nameResolver, customNameRenderer, customTypeRenderer));
                             state = State.READING_TEXT;
@@ -132,7 +132,6 @@ class SoutTemplateParser {
                 }
             }
         }
-
     }
 
     private LoopRenderer parseLoopRenderer(String name, Context context) throws IOException {
@@ -144,7 +143,7 @@ class SoutTemplateParser {
             loopParts.add(new ContainerRenderer(context.lastPosition(), renderersInLoopPart));
         } while (closeChar == separatorChar);
         if (closeChar == -1) {
-            throw new IOException("End of template while reading a loop.");
+            throw new IllegalStateException("End of template while reading a loop.");
         }
         int parts = loopParts.size();
         ContainerRenderer mainPart, leadIn = null, separatorPart = null, leadOut = null;
