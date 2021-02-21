@@ -35,7 +35,7 @@ class NameRenderer extends Renderer {
         if (customNameRenderer.render(model, name, outputWriter)) {
             return;
         }
-        Object subModel = nameResolver.resolveNameOnModel(model, name);
+        Object subModel = nameResolver.resolveComplexNameOnModel(model, name);
         if (customTypeRenderer.write(subModel, outputWriter)) {
             return;
         }
@@ -95,7 +95,7 @@ class LoopRenderer extends Renderer {
 
     @Override
     public void render(Object model, Writer outputWriter) throws IOException, IllegalAccessException {
-        var collection = nameResolver.resolveNameOnModel(model, name);
+        var collection = nameResolver.resolveComplexNameOnModel(model, name);
         var iterator = iteratorFactory.toIterator(collection);
         var hasItems = iterator.hasNext();
 

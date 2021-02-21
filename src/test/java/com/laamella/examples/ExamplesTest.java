@@ -69,7 +69,7 @@ public class ExamplesTest {
     }
 
     @Test
-    public void useNameResolverToForwardToAnotherTemplate() throws IOException, IllegalAccessException {
+    public void useCustomNameRendererToForwardToAnotherTemplate() throws IOException, IllegalAccessException {
         // The TemplateResolver stores a map of name->template.
         var nestedTemplateRenderer = new NestedTemplateRenderer();
         var configuration = new SoutConfiguration('{', '|', '}', '\\', nestedTemplateRenderer, null, null);
@@ -148,6 +148,34 @@ public class ExamplesTest {
         }
     }
 
+
+    @Test
+    public void useNameResolverToAddACounter() throws IOException, IllegalAccessException {
+        var counterRenderer = new CounterRenderer();
+        var configuration = new SoutConfiguration('{', '|', '}', '\\', counterRenderer, null, null);
+
+        var template = new SoutTemplate(new StringReader("Items: {items|{counter}. {name}|, }"), configuration);
+        var output = new StringWriter();
+        template.render(new Letter("", "", new Item("ball", 14.55), new Item("Triangle", 3.99), new Item("Flarb", 15.50)), output);
+        assertEquals("Items: 1. ball, 2. Triangle, 3. Flarb", output.toString());
+    }
+
+    static class CounterRenderer implements CustomNameRenderer {
+        // TODO figure out a decent way to reset this counter.
+        // Maybe put it in a map keyed on the writer?
+        // Maybe add a render variables map to the parameters?
+        private int count = 0;
+
+        @Override
+        public boolean render(Object model, String name, Writer outputWriter) throws IOException {
+            if (name.equals("counter")) {
+                count++;
+                outputWriter.write("" + count);
+                return true;
+            }
+            return false;
+        }
+    }
 }
 
 

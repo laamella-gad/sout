@@ -10,16 +10,16 @@ import java.util.function.Function;
 @SuppressWarnings("unchecked")
 class NameResolver {
 
-    Object resolveNameOnModel(Object model, String complexName) throws IllegalAccessException {
+    Object resolveComplexNameOnModel(Object model, String complexName) throws IllegalAccessException {
         int dotIndex = complexName.indexOf('.');
         if (dotIndex >= 0) {
-            Object nestedValue = innerEvaluateNameOnModel(model, complexName.substring(0, dotIndex));
-            return resolveNameOnModel(nestedValue, complexName.substring(dotIndex + 1));
+            var nestedValue = resolveSimpleNameOnModel(model, complexName.substring(0, dotIndex));
+            return resolveComplexNameOnModel(nestedValue, complexName.substring(dotIndex + 1));
         }
-        return innerEvaluateNameOnModel(model, complexName);
+        return resolveSimpleNameOnModel(model, complexName);
     }
 
-    private Object innerEvaluateNameOnModel(Object target, String name) throws IllegalAccessException {
+    private Object resolveSimpleNameOnModel(Object target, String name) throws IllegalAccessException {
         // If the name is empty, the value is the target itself.
         if (name.isBlank()) {
             return target;

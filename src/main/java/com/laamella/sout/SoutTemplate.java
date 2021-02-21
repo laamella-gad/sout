@@ -16,7 +16,6 @@ public class SoutTemplate {
     public SoutTemplate(Reader templateReader, SoutConfiguration configuration) throws IOException {
         var parser = new SoutTemplateParser(
                 configuration.openChar, configuration.separatorChar, configuration.closeChar, configuration.escapeChar,
-                new NameResolver(),
                 new IteratorFactory(configuration.customIteratorFactory),
                 configuration.customNameRenderer,
                 configuration.customTypeRenderer);

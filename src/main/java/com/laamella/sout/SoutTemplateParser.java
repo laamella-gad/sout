@@ -10,20 +10,19 @@ class SoutTemplateParser {
     private final int separatorChar;
     private final int closeChar;
     private final int escapeChar;
-    private final NameResolver nameResolver;
+    private final NameResolver nameResolver = new NameResolver();
     private final IteratorFactory iteratorFactory;
     private final CustomNameRenderer customNameRenderer;
     private final CustomTypeRenderer customTypeRenderer;
 
     public SoutTemplateParser(int openChar, int separatorChar, int closeChar, int escapeChar,
-                              NameResolver nameResolver, IteratorFactory iteratorFactory,
+                              IteratorFactory iteratorFactory,
                               CustomNameRenderer customNameRenderer,
                               CustomTypeRenderer customTypeRenderer) {
         this.openChar = openChar;
         this.separatorChar = separatorChar;
         this.closeChar = closeChar;
         this.escapeChar = escapeChar;
-        this.nameResolver = nameResolver;
         this.iteratorFactory = iteratorFactory;
         this.customNameRenderer = customNameRenderer;
         this.customTypeRenderer = customTypeRenderer;
@@ -118,8 +117,7 @@ class SoutTemplateParser {
                     }
                     case READING_NAME -> {
                         if (c == separatorChar) {
-                            String name = text.consume();
-                            LoopRenderer loopNode = parseLoopRenderer(name, context);
+                            LoopRenderer loopNode = parseLoopRenderer(text.consume(), context);
                             renderers.add(loopNode);
                             state = State.READING_TEXT;
                         } else if (c == openChar) {
@@ -153,14 +151,14 @@ class SoutTemplateParser {
         switch (parts) {
             case 1 -> mainPart = loopParts.get(0);
             case 2 -> {
-                mainPart = (ContainerRenderer) loopParts.get(0);
-                separatorPart = (ContainerRenderer) loopParts.get(1);
+                mainPart = loopParts.get(0);
+                separatorPart = loopParts.get(1);
             }
             case 4 -> {
-                leadIn = (ContainerRenderer) loopParts.get(0);
-                mainPart = (ContainerRenderer) loopParts.get(1);
-                separatorPart = (ContainerRenderer) loopParts.get(2);
-                leadOut = (ContainerRenderer) loopParts.get(3);
+                leadIn = loopParts.get(0);
+                mainPart = loopParts.get(1);
+                separatorPart = loopParts.get(2);
+                leadOut = loopParts.get(3);
             }
             // TODO 6 = special separator after the first and before the last element?
             default -> throw new IllegalArgumentException(String.format("Wrong amount of parts (%d) for loop %s.", parts, name));
