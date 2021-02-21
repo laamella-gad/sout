@@ -28,8 +28,8 @@ public class SoutConfiguration {
         this.escapeChar = escapeChar;
         this.closeChar = closeChar;
         this.separatorChar = separatorChar;
-        this.customNameRenderer = customNameRenderer == null ? (model, name, outputWriter) -> false : customNameRenderer;
-        this.customTypeRenderer = customTypeRenderer == null ? (model, outputWriter) -> false : customTypeRenderer;
-        this.customIteratorFactory = customIteratorFactory == null ? model -> null : customIteratorFactory;
+        this.customNameRenderer = customNameRenderer == null ? (model, name, outputWriter, userData) -> false : customNameRenderer;
+        this.customTypeRenderer = customTypeRenderer == null ? (model, outputWriter, userData) -> false : customTypeRenderer;
+        this.customIteratorFactory = customIteratorFactory == null ? (model, userData) -> null : customIteratorFactory;
     }
 }

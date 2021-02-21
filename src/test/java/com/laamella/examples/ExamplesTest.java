@@ -54,7 +54,7 @@ public class ExamplesTest {
     public void useACustomDateFormatter() throws IOException, IllegalAccessException {
         var customDateRenderer = new CustomTypeRenderer() {
             @Override
-            public boolean write(Object model, Writer outputWriter) throws IOException {
+            public boolean write(Object model, Writer outputWriter, Map<String, Object> userData) throws IOException {
                 if (model instanceof Date) {
                     var formattedDate = new SimpleDateFormat("dd-MM-yyyy").format((Date) model);
                     outputWriter.write(formattedDate);
@@ -104,12 +104,12 @@ public class ExamplesTest {
         }
 
         @Override
-        public boolean render(Object model, String name, Writer outputWriter) throws IOException, IllegalAccessException {
+        public boolean render(Object model, String name, Writer outputWriter, Map<String, Object> userData) throws IOException, IllegalAccessException {
             SoutTemplate template = templates.get(name);
             if (template == null) {
                 return false;
             }
-            template.render(model, outputWriter);
+            template.render(model, outputWriter, userData);
             return true;
         }
     }
@@ -117,7 +117,7 @@ public class ExamplesTest {
 
     @Test
     public void chainCustomTypeRenderers() throws IOException, IllegalAccessException {
-        CustomTypeRenderer dummyTypeRenderer = (model, outputWriter) -> false;
+        CustomTypeRenderer dummyTypeRenderer = (model, outputWriter, userData) -> false;
 
         var customTypeRendererList = new CustomTypeRendererList(dummyTypeRenderer, dummyTypeRenderer, dummyTypeRenderer);
 
@@ -141,9 +141,9 @@ public class ExamplesTest {
         }
 
         @Override
-        public boolean write(Object model, Writer outputWriter) throws IOException, IllegalAccessException {
+        public boolean write(Object model, Writer outputWriter, Map<String, Object> userData) throws IOException, IllegalAccessException {
             for (CustomTypeRenderer renderer : renderers) {
-                if (renderer.write(model, outputWriter)) {
+                if (renderer.write(model, outputWriter, userData)) {
                     return true;
                 }
             }
@@ -164,15 +164,13 @@ public class ExamplesTest {
     }
 
     static class CounterRenderer implements CustomNameRenderer {
-        // TODO figure out a decent way to reset this counter.
-        // Maybe put it in a map keyed on the writer?
-        // Maybe add a render variables map to the parameters?
-        private int count = 0;
-
         @Override
-        public boolean render(Object model, String name, Writer outputWriter) throws IOException {
-            if (name.equals("counter")) {
-                count++;
+        public boolean render(Object model, String name, Writer outputWriter, Map<String, Object> userData) throws IOException {
+            // "startsWith" so that you can define different counters like "{counter1}{counter-tiles}{counterABC}"
+            if (name.startsWith("counter")) {
+                // Use the userData map instead of a field so that the counter is reset every render.
+                Integer count = (Integer) userData.getOrDefault(name, 1);
+                userData.put(name, count + 1);
                 outputWriter.write("" + count);
                 return true;
             }

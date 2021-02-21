@@ -3,6 +3,7 @@ package com.laamella.sout;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
+import java.util.Map;
 
 import static java.util.stream.Collectors.joining;
 
@@ -13,7 +14,7 @@ abstract class Renderer {
         this.position = position;
     }
 
-    abstract void render(Object model, Writer outputWriter) throws IOException, IllegalAccessException;
+    abstract void render(Object model, Writer outputWriter, Map<String, Object> userData) throws IOException, IllegalAccessException;
 }
 
 class NameRenderer extends Renderer {
@@ -31,12 +32,12 @@ class NameRenderer extends Renderer {
     }
 
     @Override
-    void render(Object model, Writer outputWriter) throws IOException, IllegalAccessException {
-        if (customNameRenderer.render(model, name, outputWriter)) {
+    void render(Object model, Writer outputWriter, Map<String, Object> userData) throws IOException, IllegalAccessException {
+        if (customNameRenderer.render(model, name, outputWriter, userData)) {
             return;
         }
         Object subModel = nameResolver.resolveComplexNameOnModel(model, name);
-        if (customTypeRenderer.write(subModel, outputWriter)) {
+        if (customTypeRenderer.write(subModel, outputWriter, userData)) {
             return;
         }
         if (subModel == null) {
@@ -60,9 +61,9 @@ class ContainerRenderer extends Renderer {
     }
 
     @Override
-    void render(Object model, Writer outputWriter) throws IOException, IllegalAccessException {
+    void render(Object model, Writer outputWriter, Map<String, Object> userData) throws IOException, IllegalAccessException {
         for (var child : children) {
-            child.render(model, outputWriter);
+            child.render(model, outputWriter, userData);
         }
     }
 
@@ -94,26 +95,26 @@ class LoopRenderer extends Renderer {
     }
 
     @Override
-    public void render(Object model, Writer outputWriter) throws IOException, IllegalAccessException {
+    public void render(Object model, Writer outputWriter, Map<String, Object> userData) throws IOException, IllegalAccessException {
         var collection = nameResolver.resolveComplexNameOnModel(model, name);
-        var iterator = iteratorFactory.toIterator(collection);
+        var iterator = iteratorFactory.toIterator(collection, userData);
         var hasItems = iterator.hasNext();
 
         if (hasItems && leadIn != null) {
-            leadIn.render(model, outputWriter);
+            leadIn.render(model, outputWriter, userData);
         }
 
         var printSeparator = false;
         while (iterator.hasNext()) {
             var listElement = iterator.next();
             if (printSeparator && separatorPart != null) {
-                separatorPart.render(listElement, outputWriter);
+                separatorPart.render(listElement, outputWriter, userData);
             }
             printSeparator = true;
-            mainPart.render(listElement, outputWriter);
+            mainPart.render(listElement, outputWriter, userData);
         }
         if (hasItems && leadOut != null) {
-            leadOut.render(model, outputWriter);
+            leadOut.render(model, outputWriter, userData);
         }
     }
 
@@ -137,7 +138,7 @@ class TextRenderer extends Renderer {
     }
 
     @Override
-    public void render(Object model, Writer outputWriter) throws IOException {
+    public void render(Object model, Writer outputWriter, Map<String, Object> userData) throws IOException {
         outputWriter.append(text);
     }
 

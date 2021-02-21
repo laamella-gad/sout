@@ -2,6 +2,7 @@ package com.laamella.sout;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.stream.Stream;
 
@@ -15,8 +16,8 @@ class IteratorFactory {
         this.customIteratorFactory = customIteratorFactory;
     }
 
-    Iterator<?> toIterator(Object model) {
-        Iterator<?> iterator = customIteratorFactory.toIterator(model);
+    Iterator<?> toIterator(Object model, Map<String, Object> userData) {
+        Iterator<?> iterator = customIteratorFactory.toIterator(model, userData);
         if (iterator != null) {
             return iterator;
         } else if (model == null) {

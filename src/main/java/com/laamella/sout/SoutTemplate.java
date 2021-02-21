@@ -3,6 +3,8 @@ package com.laamella.sout;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A template. The main class of the sout library.
@@ -29,7 +31,18 @@ public class SoutTemplate {
      * @param outputWriter where the result will be written.
      */
     public void render(Object data, Writer outputWriter) throws IOException, IllegalAccessException {
-        rootRenderer.render(data, outputWriter);
+        render(data, outputWriter, new HashMap<>());
+    }
+
+    /**
+     * Render a template.
+     *
+     * @param data         the model containing the data that should be filled in the template.
+     * @param outputWriter where the result will be written.
+     * @param userData     a key->value store where custom renderers and factories can store their state. Pass it if you want to put some values in before rendering.
+     */
+    public void render(Object data, Writer outputWriter, Map<String, Object> userData) throws IOException, IllegalAccessException {
+        rootRenderer.render(data, outputWriter, userData);
     }
 
     @Override

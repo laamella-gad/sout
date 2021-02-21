@@ -90,6 +90,7 @@ TODO release
 - make it do only what it needs to do. Therefore, no template loading infrastructure, no library of formatters, no
   caching mechanics, etc.
 - make everything straightforward. No builders, no hidden static factory methods, no accidentally public methods, etc.
+  If there is something in the JDK that is good enough, don't reinvent it.
 - avoid complexity in the template language - special formatting is done in code (that makes it more of a viewmodel-view
   library?)
 - open for extension. Rendering can be completely customized at various points.
