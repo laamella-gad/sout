@@ -32,7 +32,7 @@ like [this sample](https://github.com/matozoid/sout/blob/master/src/test/resourc
 ### loops
 
 `<abc|<def>>` takes the value "abc" from the model, and the value "def" from that value. If the value of "abc" is a
-collection of some kind, <def> will be repeated for each element of the collection.
+collection of some kind, `<def>` will be repeated for each element of the collection.
 
 With a model of...
 
@@ -49,7 +49,7 @@ company -> "Laamella Gad"
 
 `Hello <people|<name>|, >` will output `Hello Piet, Klaas`. Note how the comma is now a correct separator.
 
-`Available jobs: <jobs|<>|, >.` will output `Available jobs: janitor, cleaner.`. Since the strings we want to render are
+`Available jobs: <jobs|<>|, >.` will output `Available jobs: janitor, cleaner.` Since the strings we want to render are
 directly contained in the jobs list, we can use `<>` to say: the direct list element please, no need to look for a value
 on it.
 
@@ -93,3 +93,5 @@ TODO release
 - avoid complexity in the template language - special formatting is done in code (that makes it more of a viewmodel-view
   library?)
 - open for extension. Rendering can be completely customized at various points.
+- strict by default: a template can't be created from an invalid template text, nulls will abort template rendering,
+  etc.
