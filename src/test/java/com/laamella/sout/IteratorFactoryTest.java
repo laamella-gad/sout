@@ -82,7 +82,7 @@ public class IteratorFactoryTest {
     @Test
     public void nullsAreNotIterable() {
         assertThatThrownBy(() -> iteratorFactory.toIterator(null, scope))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(SoutException.class)
                 .hasMessage("Trying to loop over null.");
     }
 

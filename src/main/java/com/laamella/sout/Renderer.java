@@ -13,7 +13,7 @@ abstract class Renderer {
         this.position = position;
     }
 
-    abstract void render(Object model, Scope scope, Writer outputWriter) throws IOException, IllegalAccessException;
+    abstract void render(Object model, Scope scope, Writer outputWriter) throws IOException;
 }
 
 class NameRenderer extends Renderer {
@@ -31,7 +31,7 @@ class NameRenderer extends Renderer {
     }
 
     @Override
-    void render(Object model, Scope scope, Writer outputWriter) throws IOException, IllegalAccessException {
+    void render(Object model, Scope scope, Writer outputWriter) throws IOException {
         if (customNameRenderer.render(model, name, scope, outputWriter)) {
             return;
         }
@@ -40,7 +40,7 @@ class NameRenderer extends Renderer {
             return;
         }
         if (subModel == null) {
-            throw new IllegalArgumentException("Null value.");
+            throw new SoutException("Null value.");
         }
         outputWriter.append(subModel.toString());
     }
@@ -60,7 +60,7 @@ class ContainerRenderer extends Renderer {
     }
 
     @Override
-    void render(Object model, Scope scope, Writer outputWriter) throws IOException, IllegalAccessException {
+    void render(Object model, Scope scope, Writer outputWriter) throws IOException {
         for (var child : children) {
             child.render(model, scope, outputWriter);
         }
@@ -94,7 +94,7 @@ class LoopRenderer extends Renderer {
     }
 
     @Override
-    public void render(Object model, Scope scope, Writer outputWriter) throws IOException, IllegalAccessException {
+    public void render(Object model, Scope scope, Writer outputWriter) throws IOException {
         var collection = nameResolver.resolveComplexNameOnModel(model, name);
         var iterator = iteratorFactory.toIterator(collection, scope);
         if (!iterator.hasNext()) {

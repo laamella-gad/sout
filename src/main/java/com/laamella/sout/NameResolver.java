@@ -10,7 +10,7 @@ import java.util.function.Function;
 @SuppressWarnings("unchecked")
 class NameResolver {
 
-    Object resolveComplexNameOnModel(Object model, String complexName) throws IllegalAccessException {
+    Object resolveComplexNameOnModel(Object model, String complexName) {
         int dotIndex = complexName.indexOf('.');
         if (dotIndex >= 0) {
             var nestedValue = resolveSimpleNameOnModel(model, complexName.substring(0, dotIndex));
@@ -19,14 +19,14 @@ class NameResolver {
         return resolveSimpleNameOnModel(model, complexName);
     }
 
-    private Object resolveSimpleNameOnModel(Object target, String name) throws IllegalAccessException {
+    private Object resolveSimpleNameOnModel(Object target, String name) {
         // If the name is empty, the value is the target itself.
         if (name.isBlank()) {
             return target;
         }
         // If we're trying to resolve a name on a null object, it will always fail.
         if (target == null) {
-            throw new NullPointerException(String.format("%s not found on null object.", name));
+            throw new SoutException("%s not found on null object.", name);
         }
         // Find name in the keys of a map.
         if (target instanceof Map) {
@@ -34,7 +34,7 @@ class NameResolver {
             if (map.containsKey(name)) {
                 return map.get(name);
             }
-            throw new IllegalArgumentException(String.format("%s not found in map %s.", name, target));
+            throw new SoutException("%s not found in map %s.", name, target);
         }
         // Find value by applying the target function to the key.
         if (target instanceof Function) {
@@ -61,20 +61,22 @@ class NameResolver {
             return plainMethodValue;
         }
         // Give up.
-        throw new IllegalArgumentException(String.format("%s not found on %s", name, target));
+        throw new SoutException("%s not found on %s", name, target);
     }
 
     private static String capitalize(String s) {
         return s.substring(0, 1).toUpperCase() + s.substring(1);
     }
 
-    static Object getFieldValue(Object target, Class<?> type, String fieldName) throws IllegalAccessException {
+    static Object getFieldValue(Object target, Class<?> type, String fieldName) {
         try {
             var field = type.getDeclaredField(fieldName);
             field.setAccessible(true);
             return field.get(target);
         } catch (NoSuchFieldException e) {
             // go on
+        } catch (IllegalAccessException e) {
+            throw new SoutException(e);
         }
 
         var superclass = type.getSuperclass();
@@ -84,13 +86,15 @@ class NameResolver {
         return getFieldValue(target, superclass, fieldName);
     }
 
-    static Object getMethodValue(Object target, Class<?> type, String fieldName) throws IllegalAccessException {
+    static Object getMethodValue(Object target, Class<?> type, String fieldName) {
         try {
             var method = type.getDeclaredMethod(fieldName);
             method.setAccessible(true);
             return method.invoke(target);
         } catch (NoSuchMethodException | InvocationTargetException e) {
             // go on
+        } catch (IllegalAccessException e) {
+            throw new SoutException(e);
         }
 
         var superclass = type.getSuperclass();

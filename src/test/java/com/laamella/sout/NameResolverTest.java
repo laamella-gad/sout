@@ -13,33 +13,33 @@ public class NameResolverTest {
     private final NameResolver nameResolver = new NameResolver();
 
     @Test
-    public void findValueOfMapEntry() throws IllegalAccessException {
+    public void findValueOfMapEntry() {
         Object value = nameResolver.resolveComplexNameOnModel(ImmutableMap.of("x", "y"), "x");
         assertThat(value).isEqualTo("y");
     }
 
     @Test
-    public void findValueOfFunctionApplication() throws IllegalAccessException {
+    public void findValueOfFunctionApplication() {
         Object value = nameResolver.resolveComplexNameOnModel((Function<String, String>) o -> o + "woo", "name");
         assertThat(value).isEqualTo("namewoo");
     }
 
     @Test
-    public void findValueOfField() throws IllegalAccessException {
+    public void findValueOfField() {
         TestModel testModel = new TestModel();
         Object value = nameResolver.resolveComplexNameOnModel(testModel, "field");
         assertThat(value).isEqualTo("*field*");
     }
 
     @Test
-    public void findValueOfGetter() throws IllegalAccessException {
+    public void findValueOfGetter() {
         TestModel testModel = new TestModel();
         Object value = nameResolver.resolveComplexNameOnModel(testModel, "getter");
         assertThat(value).isEqualTo("*getter*");
     }
 
     @Test
-    public void findValueOfIsser() throws IllegalAccessException {
+    public void findValueOfIsser() {
         TestModel testModel = new TestModel();
         Object value = nameResolver.resolveComplexNameOnModel(testModel, "isser");
         assertThat(value).isEqualTo(TRUE);

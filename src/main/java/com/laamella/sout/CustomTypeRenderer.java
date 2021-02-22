@@ -12,5 +12,5 @@ public interface CustomTypeRenderer {
      * @param outputWriter the output.
      * @return true if this {@link CustomTypeRenderer} has written the type and no further handling is wanted.
      */
-    boolean write(Object model, Scope scope, Writer outputWriter) throws IOException, IllegalAccessException;
+    boolean write(Object model, Scope scope, Writer outputWriter) throws IOException;
 }

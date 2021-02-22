@@ -14,5 +14,5 @@ public interface CustomNameRenderer {
      * @return true when this handler has handled the name, and no further processing needs to be done.
      * false when normal evaluation should continue (meaning the normal evaluation of name on the model.)
      */
-    boolean render(Object model, String name, Scope scope, Writer outputWriter) throws IOException, IllegalAccessException;
+    boolean render(Object model, String name, Scope scope, Writer outputWriter) throws IOException;
 }

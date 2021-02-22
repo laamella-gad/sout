@@ -14,8 +14,10 @@ public class SoutTemplate {
 
     /**
      * Create a new template. It is parsed immediately, so be prepared to handle exceptions about invalid templates here.
+     *
+     * @throws SoutException when something goes wrong with parsing the template.
      */
-    public SoutTemplate(Reader templateReader, SoutConfiguration configuration) throws IOException {
+    public SoutTemplate(Reader templateReader, SoutConfiguration configuration) {
         requireNonNull(configuration);
         requireNonNull(templateReader);
         var parser = new SoutTemplateParser(
@@ -23,7 +25,11 @@ public class SoutTemplate {
                 new IteratorFactory(configuration.customIteratorFactory),
                 configuration.customNameRenderer,
                 configuration.customTypeRenderer);
-        rootRenderer = parser.parseTemplate(templateReader);
+        try {
+            rootRenderer = parser.parseTemplate(templateReader);
+        } catch (IOException e) {
+            throw new SoutException(e);
+        }
     }
 
     /**
@@ -31,10 +37,15 @@ public class SoutTemplate {
      *
      * @param data         the model containing the data that should be filled in the template.
      * @param outputWriter where the result will be written.
+     * @throws SoutException when something goes wrong with rendering the template.
      */
-    public void render(Object data, Writer outputWriter) throws IOException, IllegalAccessException {
+    public void render(Object data, Writer outputWriter) {
         requireNonNull(outputWriter);
-        rootRenderer.render(data, new Scope(null), outputWriter);
+        try {
+            rootRenderer.render(data, new Scope(null), outputWriter);
+        } catch (IOException e) {
+            throw new SoutException(e);
+        }
     }
 
     @Override

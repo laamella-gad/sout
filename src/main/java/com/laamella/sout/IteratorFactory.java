@@ -2,7 +2,6 @@ package com.laamella.sout;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.stream.Stream;
 
 import static java.util.Arrays.stream;
@@ -20,7 +19,7 @@ class IteratorFactory {
         if (iterator != null) {
             return iterator;
         } else if (model == null) {
-            throw new IllegalArgumentException("Trying to loop over null.");
+            throw new SoutException("Trying to loop over null.");
         } else if (model instanceof List) {
             return ((List<?>) model).iterator();
         } else if (model instanceof Object[]) {
@@ -65,9 +64,6 @@ class IteratorFactory {
         }
 
         public Byte next() {
-            if (i == a.length) {
-                throw new NoSuchElementException();
-            }
             return a[i++];
         }
     }
@@ -85,9 +81,6 @@ class IteratorFactory {
         }
 
         public Short next() {
-            if (i == a.length) {
-                throw new NoSuchElementException();
-            }
             return a[i++];
         }
     }
@@ -105,9 +98,6 @@ class IteratorFactory {
         }
 
         public Float next() {
-            if (i == a.length) {
-                throw new NoSuchElementException();
-            }
             return a[i++];
         }
     }
@@ -125,9 +115,6 @@ class IteratorFactory {
         }
 
         public Double next() {
-            if (i == a.length) {
-                throw new NoSuchElementException();
-            }
             return a[i++];
         }
     }
@@ -145,9 +132,6 @@ class IteratorFactory {
         }
 
         public Character next() {
-            if (i == a.length) {
-                throw new NoSuchElementException();
-            }
             return a[i++];
         }
     }
@@ -165,9 +149,6 @@ class IteratorFactory {
         }
 
         public Boolean next() {
-            if (i == a.length) {
-                throw new NoSuchElementException();
-            }
             return a[i++];
         }
     }
@@ -185,9 +166,6 @@ class IteratorFactory {
         }
 
         public Long next() {
-            if (i == a.length) {
-                throw new NoSuchElementException();
-            }
             return a[i++];
         }
     }

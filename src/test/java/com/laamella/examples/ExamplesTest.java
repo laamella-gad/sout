@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ExamplesTest {
     @Test
-    public void specifyTheTemplateDirectlyInAString() throws IOException, IllegalAccessException {
+    public void specifyTheTemplateDirectlyInAString() {
         var configuration = new SoutConfiguration('{', '|', '}', '\\', null, null, null);
         var template = new SoutTemplate(new StringReader("Hello {}"), configuration);
         var output = new StringWriter();
@@ -27,7 +27,7 @@ public class ExamplesTest {
     }
 
     @Test
-    public void loadTheTemplateFromTheClassPath() throws IOException, IllegalAccessException, URISyntaxException {
+    public void loadTheTemplateFromTheClassPath() throws IOException, URISyntaxException {
         Path templatePath = Paths.get(getClass().getResource("/templates/hello.sout").toURI());
         try (BufferedReader reader = Files.newBufferedReader(templatePath)) {
             var configuration = new SoutConfiguration('<', '|', '>', '\\', null, null, null);
@@ -48,7 +48,7 @@ public class ExamplesTest {
     }
 
     @Test
-    public void useACustomDateFormatter() throws IOException, IllegalAccessException {
+    public void useACustomDateFormatter() {
         var customDateRenderer = new CustomTypeRenderer() {
             @Override
             public boolean write(Object model, Scope scope, Writer outputWriter) throws IOException {
@@ -69,7 +69,7 @@ public class ExamplesTest {
     }
 
     @Test
-    public void useCustomNameRendererToForwardToAnotherTemplate() throws IOException, IllegalAccessException {
+    public void useCustomNameRendererToForwardToAnotherTemplate() {
         // The TemplateResolver stores a map of name->template.
         var nestedTemplateRenderer = new NestedTemplateRenderer();
         var configuration = new SoutConfiguration('{', '|', '}', '\\', nestedTemplateRenderer, null, null);
@@ -101,7 +101,7 @@ public class ExamplesTest {
         }
 
         @Override
-        public boolean render(Object model, String name, Scope scope, Writer outputWriter) throws IOException, IllegalAccessException {
+        public boolean render(Object model, String name, Scope scope, Writer outputWriter) {
             SoutTemplate template = templates.get(name);
             if (template == null) {
                 return false;
@@ -113,7 +113,7 @@ public class ExamplesTest {
 
 
     @Test
-    public void chainCustomTypeRenderers() throws IOException, IllegalAccessException {
+    public void chainCustomTypeRenderers() {
         CustomTypeRenderer dummyTypeRenderer = (model, scope, outputWriter) -> false;
 
         var customTypeRendererList = new CustomTypeRendererList(dummyTypeRenderer, dummyTypeRenderer, dummyTypeRenderer);
@@ -138,7 +138,7 @@ public class ExamplesTest {
         }
 
         @Override
-        public boolean write(Object model, Scope scope, Writer outputWriter) throws IOException, IllegalAccessException {
+        public boolean write(Object model, Scope scope, Writer outputWriter) throws IOException {
             for (CustomTypeRenderer renderer : renderers) {
                 if (renderer.write(model, scope, outputWriter)) {
                     return true;
@@ -150,7 +150,7 @@ public class ExamplesTest {
 
 
     @Test
-    public void useNameResolverToAddACounter() throws IOException, IllegalAccessException {
+    public void useNameResolverToAddACounter() {
         var counterRenderer = new CounterRenderer();
         var configuration = new SoutConfiguration('{', '|', '}', '\\', counterRenderer, null, null);
 

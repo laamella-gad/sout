@@ -31,8 +31,8 @@ class SoutTemplateParser {
     enum State {READING_NAME, READING_TEXT}
 
     static class Context {
+        final Reader reader;
         int row = 0, column = 0;
-        Reader reader;
         private Position lastPosition = new Position(0, 0);
 
         Context(Reader reader) {
@@ -61,7 +61,7 @@ class SoutTemplateParser {
         var renderers = new ArrayList<Renderer>();
         int c = parseRenderersIntoList(renderers, false, new Context(template));
         if (c == closeChar) {
-            throw new IllegalStateException(String.format("Unexpected closing %c at top level.", c));
+            throw new SoutException("Unexpected closing %c at top level.", c);
         }
         return new ContainerRenderer(new Position(0, 0), renderers);
     }
@@ -75,7 +75,7 @@ class SoutTemplateParser {
             c = context.read();
             if (c == -1) {
                 switch (state) {
-                    case READING_NAME -> throw new IllegalStateException(String.format("Name %s was not closed before end of file.", text.consume()));
+                    case READING_NAME -> throw new SoutException(String.format("Name %s was not closed before end of file.", text.consume()));
                     case READING_TEXT -> renderers.add(new TextRenderer(text.consume(), context.lastPosition()));
                 }
                 return c;
@@ -121,7 +121,7 @@ class SoutTemplateParser {
                             renderers.add(loopNode);
                             state = State.READING_TEXT;
                         } else if (c == openChar) {
-                            throw new IllegalStateException(String.format("Unexpected open %c in name.", c));
+                            throw new SoutException("Unexpected open %c in name.", c);
                         } else if (c == closeChar) {
                             renderers.add(new NameRenderer(text.consume(), context.lastPosition(), nameResolver, customNameRenderer, customTypeRenderer));
                             state = State.READING_TEXT;
@@ -143,7 +143,7 @@ class SoutTemplateParser {
             loopParts.add(new ContainerRenderer(context.lastPosition(), renderersInLoopPart));
         } while (closeChar == separatorChar);
         if (closeChar == -1) {
-            throw new IllegalStateException("End of template while reading a loop.");
+            throw new SoutException("End of template while reading a loop.");
         }
         int parts = loopParts.size();
         ContainerRenderer mainPart, leadIn = null, separatorPart = null, leadOut = null;
@@ -160,7 +160,7 @@ class SoutTemplateParser {
                 leadOut = loopParts.get(3);
             }
             // TODO 6 = special separator after the first and before the last element?
-            default -> throw new IllegalArgumentException(String.format("Wrong amount of parts (%d) for loop %s.", parts, name));
+            default -> throw new SoutException("Wrong amount of parts (%d) for loop %s.", parts, name);
         }
         return new LoopRenderer(name, context.lastPosition(), nameResolver, iteratorFactory, mainPart, separatorPart, leadIn, leadOut);
     }

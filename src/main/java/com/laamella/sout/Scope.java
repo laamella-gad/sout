@@ -36,7 +36,7 @@ public class Scope {
     public <T> T updateVariable(String name, T newValue) {
         var scope = findScopeContainingName(requireNonNull(name));
         if (scope == null) {
-            throw new IllegalArgumentException(String.format("Variable %s not found.", name));
+            throw new SoutException("Variable %s not found.", name);
         }
         scope.variables.put(name, newValue);
         return newValue;
