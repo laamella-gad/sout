@@ -27,4 +27,8 @@ class TestModel {
     boolean isIsser() {
         return true;
     }
+
+    int plainMethod() {
+        return 15;
+    }
 }

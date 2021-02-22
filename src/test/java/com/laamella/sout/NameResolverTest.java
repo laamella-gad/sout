@@ -14,35 +14,48 @@ public class NameResolverTest {
 
     @Test
     public void findValueOfMapEntry() {
-        Object value = nameResolver.resolveComplexNameOnModel(ImmutableMap.of("x", "y"), "x");
-        assertThat(value).isEqualTo("y");
+        var value = nameResolver.resolveComplexNameOnModel(ImmutableMap.of("x", "y"), "x");
+        assertThat(value.failed).isFalse();
+        assertThat(value.value).isEqualTo("y");
     }
 
     @Test
     public void findValueOfFunctionApplication() {
-        Object value = nameResolver.resolveComplexNameOnModel((Function<String, String>) o -> o + "woo", "name");
-        assertThat(value).isEqualTo("namewoo");
+        var value = nameResolver.resolveComplexNameOnModel((Function<String, String>) o -> o + "woo", "name");
+        assertThat(value.failed).isFalse();
+        assertThat(value.value).isEqualTo("namewoo");
     }
 
     @Test
     public void findValueOfField() {
-        TestModel testModel = new TestModel();
-        Object value = nameResolver.resolveComplexNameOnModel(testModel, "field");
-        assertThat(value).isEqualTo("*field*");
+        var testModel = new TestModel();
+        var value = nameResolver.resolveComplexNameOnModel(testModel, "field");
+        assertThat(value.failed).isFalse();
+        assertThat(value.value).isEqualTo("*field*");
     }
 
     @Test
     public void findValueOfGetter() {
-        TestModel testModel = new TestModel();
-        Object value = nameResolver.resolveComplexNameOnModel(testModel, "getter");
-        assertThat(value).isEqualTo("*getter*");
+        var testModel = new TestModel();
+        var value = nameResolver.resolveComplexNameOnModel(testModel, "getter");
+        assertThat(value.failed).isFalse();
+        assertThat(value.value).isEqualTo("*getter*");
     }
 
     @Test
     public void findValueOfIsser() {
-        TestModel testModel = new TestModel();
-        Object value = nameResolver.resolveComplexNameOnModel(testModel, "isser");
-        assertThat(value).isEqualTo(TRUE);
+        var testModel = new TestModel();
+        var value = nameResolver.resolveComplexNameOnModel(testModel, "isser");
+        assertThat(value.failed).isFalse();
+        assertThat(value.value).isEqualTo(TRUE);
+    }
+
+    @Test
+    public void findValueOfPlainMethod() {
+        var testModel = new TestModel();
+        var value = nameResolver.resolveComplexNameOnModel(testModel, "plainMethod");
+        assertThat(value.failed).isFalse();
+        assertThat(value.value).isEqualTo(15);
     }
 
 }

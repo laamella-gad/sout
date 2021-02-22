@@ -1,8 +1,12 @@
 package com.laamella.sout;
 
 public class SoutException extends RuntimeException {
-    public SoutException(Throwable wrapped) {
-        super(wrapped);
+    public SoutException(Position position, Throwable wrapped) {
+        super(String.format(position + " Exception:", position), wrapped);
+    }
+
+    public SoutException(Position position, String message, Object... args) {
+        super(String.format(position + " " + message, args));
     }
 
     public SoutException(String message, Object... args) {

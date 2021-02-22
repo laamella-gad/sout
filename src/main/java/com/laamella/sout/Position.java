@@ -1,6 +1,6 @@
 package com.laamella.sout;
 
-class Position {
+public class Position {
     final int column, row;
 
     Position(int column, int row) {

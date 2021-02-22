@@ -10,5 +10,5 @@ public interface CustomIteratorFactory {
     /**
      * @return an {@link Iterator} for model, or null if this factory doesn't handle this kind of model.
      */
-    Iterator<?> toIterator(Object model, Scope scope);
+    Iterator<?> toIterator(Object model, Scope scope, Position position);
 }

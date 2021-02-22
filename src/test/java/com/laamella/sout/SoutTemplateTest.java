@@ -118,7 +118,7 @@ public class SoutTemplateTest {
         var selfTemplate = parse("{}");
         assertThatThrownBy(() -> selfTemplate.render(null, new StringWriter()))
                 .isInstanceOf(SoutException.class)
-                .hasMessage("Null value.");
+                .hasMessage("1:1 Null value.");
     }
 
     @Test
@@ -147,35 +147,35 @@ public class SoutTemplateTest {
     public void tooManyClosingChars() {
         assertThatThrownBy(() -> parse("123{abc}456}789"))
                 .isInstanceOf(SoutException.class)
-                .hasMessage("Unexpected closing } at top level.");
+                .hasMessage("1:12 Unexpected closing } at top level.");
     }
 
     @Test
     public void tooFewClosingChars() {
         assertThatThrownBy(() -> parse("123{abc"))
                 .isInstanceOf(SoutException.class)
-                .hasMessage("Name abc was not closed before end of file.");
+                .hasMessage("1:8 Name abc was not closed before end of file.");
     }
 
     @Test
     public void unexpectedOpenCharInName() {
         assertThatThrownBy(() -> parse("123{abc{def}}"))
                 .isInstanceOf(SoutException.class)
-                .hasMessage("Unexpected open { in name.");
+                .hasMessage("1:8 Unexpected open { in name.");
     }
 
     @Test
     public void unexpectedEndOfFileWhileReadingLoop() {
         assertThatThrownBy(() -> parse("123{abc|def|ghi"))
                 .isInstanceOf(SoutException.class)
-                .hasMessage("End of template while reading a loop.");
+                .hasMessage("1:16 End of template while reading a loop.");
     }
 
     @Test
     public void wrongAmountOfPartsForLoop() {
         assertThatThrownBy(() -> parse("{abc|def|ghi|jkl}"))
                 .isInstanceOf(SoutException.class)
-                .hasMessage("Wrong amount of parts (3) for loop abc.");
+                .hasMessage("1:17 Wrong amount of parts (3) for loop abc.");
     }
 
     @Test
@@ -183,7 +183,7 @@ public class SoutTemplateTest {
         var selfLoopTemplate = parse("{|}");
         assertThatThrownBy(() -> selfLoopTemplate.render(null, new StringWriter()))
                 .isInstanceOf(SoutException.class)
-                .hasMessage("Trying to loop over null.");
+                .hasMessage("1:3 Trying to loop over null.");
     }
 
     @Test
@@ -191,7 +191,7 @@ public class SoutTemplateTest {
         var template = parse("{abc}");
         assertThatThrownBy(() -> template.render(null, new StringWriter()))
                 .isInstanceOf(SoutException.class)
-                .hasMessage("abc not found on null object.");
+                .hasMessage("1:1 abc not found on null object.");
     }
 
     @Test
@@ -200,7 +200,7 @@ public class SoutTemplateTest {
 
         assertThatThrownBy(() -> template.render(new HashMap<>(), new StringWriter()))
                 .isInstanceOf(SoutException.class)
-                .hasMessage("abc not found in map {}.");
+                .hasMessage("1:1 abc not found in map {}.");
     }
 
     @Test
@@ -212,7 +212,7 @@ public class SoutTemplateTest {
 
         assertThatThrownBy(() -> template.render(model, new StringWriter()))
                 .isInstanceOf(SoutException.class)
-                .hasMessage("Null value.");
+                .hasMessage("1:1 Null value.");
     }
 
 

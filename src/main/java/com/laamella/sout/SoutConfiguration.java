@@ -30,6 +30,6 @@ public class SoutConfiguration {
         this.separatorChar = separatorChar;
         this.customNameRenderer = customNameRenderer == null ? (model, name, scope, outputWriter) -> false : customNameRenderer;
         this.customTypeRenderer = customTypeRenderer == null ? (model, scope, outputWriter) -> false : customTypeRenderer;
-        this.customIteratorFactory = customIteratorFactory == null ? (model, scope) -> null : customIteratorFactory;
+        this.customIteratorFactory = customIteratorFactory == null ? (model, scope, position) -> null : customIteratorFactory;
     }
 }

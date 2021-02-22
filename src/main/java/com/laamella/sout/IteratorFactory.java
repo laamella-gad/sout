@@ -14,12 +14,12 @@ class IteratorFactory {
         this.customIteratorFactory = customIteratorFactory;
     }
 
-    Iterator<?> toIterator(Object model, Scope scope) {
-        Iterator<?> iterator = customIteratorFactory.toIterator(model, scope);
+    Iterator<?> toIterator(Object model, Scope scope, Position position) {
+        Iterator<?> iterator = customIteratorFactory.toIterator(model, scope, position);
         if (iterator != null) {
             return iterator;
         } else if (model == null) {
-            throw new SoutException("Trying to loop over null.");
+            throw new SoutException(position, "Trying to loop over null.");
         } else if (model instanceof List) {
             return ((List<?>) model).iterator();
         } else if (model instanceof Object[]) {

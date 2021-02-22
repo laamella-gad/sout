@@ -1,6 +1,5 @@
 package com.laamella.sout;
 
-import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 
@@ -25,11 +24,7 @@ public class SoutTemplate {
                 new IteratorFactory(configuration.customIteratorFactory),
                 configuration.customNameRenderer,
                 configuration.customTypeRenderer);
-        try {
-            rootRenderer = parser.parseTemplate(templateReader);
-        } catch (IOException e) {
-            throw new SoutException(e);
-        }
+        rootRenderer = parser.parseTemplate(templateReader);
     }
 
     /**
@@ -41,11 +36,7 @@ public class SoutTemplate {
      */
     public void render(Object data, Writer outputWriter) {
         requireNonNull(outputWriter);
-        try {
-            rootRenderer.render(data, new Scope(null), outputWriter);
-        } catch (IOException e) {
-            throw new SoutException(e);
-        }
+        rootRenderer.render(data, new Scope(null), outputWriter);
     }
 
     @Override

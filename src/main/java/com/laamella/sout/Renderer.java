@@ -13,7 +13,7 @@ abstract class Renderer {
         this.position = position;
     }
 
-    abstract void render(Object model, Scope scope, Writer outputWriter) throws IOException;
+    abstract void render(Object model, Scope scope, Writer outputWriter);
 }
 
 class NameRenderer extends Renderer {
@@ -31,18 +31,26 @@ class NameRenderer extends Renderer {
     }
 
     @Override
-    void render(Object model, Scope scope, Writer outputWriter) throws IOException {
-        if (customNameRenderer.render(model, name, scope, outputWriter)) {
-            return;
+    void render(Object model, Scope scope, Writer outputWriter) {
+        try {
+            if (customNameRenderer.render(model, name, scope, outputWriter)) {
+                return;
+            }
+            NameResolver.Result subModelResult = nameResolver.resolveComplexNameOnModel(model, name);
+            if (subModelResult.failed) {
+                throw new SoutException(position, subModelResult.message);
+            }
+            var subModel = subModelResult.value;
+            if (customTypeRenderer.write(subModel, scope, outputWriter)) {
+                return;
+            }
+            if (subModel == null) {
+                throw new SoutException(position, "Null value.");
+            }
+            outputWriter.append(subModel.toString());
+        } catch (IOException e) {
+            throw new SoutException(position, e);
         }
-        Object subModel = nameResolver.resolveComplexNameOnModel(model, name);
-        if (customTypeRenderer.write(subModel, scope, outputWriter)) {
-            return;
-        }
-        if (subModel == null) {
-            throw new SoutException("Null value.");
-        }
-        outputWriter.append(subModel.toString());
     }
 
     @Override
@@ -60,7 +68,7 @@ class ContainerRenderer extends Renderer {
     }
 
     @Override
-    void render(Object model, Scope scope, Writer outputWriter) throws IOException {
+    void render(Object model, Scope scope, Writer outputWriter) {
         for (var child : children) {
             child.render(model, scope, outputWriter);
         }
@@ -94,9 +102,13 @@ class LoopRenderer extends Renderer {
     }
 
     @Override
-    public void render(Object model, Scope scope, Writer outputWriter) throws IOException {
-        var collection = nameResolver.resolveComplexNameOnModel(model, name);
-        var iterator = iteratorFactory.toIterator(collection, scope);
+    public void render(Object model, Scope scope, Writer outputWriter) {
+        var collectionResult = nameResolver.resolveComplexNameOnModel(model, name);
+        if (collectionResult.failed) {
+            throw new SoutException(position, collectionResult.message);
+        }
+        var collection = collectionResult.value;
+        var iterator = iteratorFactory.toIterator(collection, scope, position);
         if (!iterator.hasNext()) {
             // Empty collection, nothing to do.
             return;
@@ -141,8 +153,12 @@ class TextRenderer extends Renderer {
     }
 
     @Override
-    public void render(Object model, Scope scope, Writer outputWriter) throws IOException {
-        outputWriter.append(text);
+    public void render(Object model, Scope scope, Writer outputWriter) {
+        try {
+            outputWriter.append(text);
+        } catch (IOException e) {
+            throw new SoutException(position, e);
+        }
     }
 
     @Override
