@@ -13,11 +13,11 @@ public class SoutConfiguration {
     final CustomIteratorFactory customIteratorFactory;
 
     /**
-     * @param openChar              the character that opens a name or loop, like "{" or "<"
-     * @param separatorChar         the character that separates parts of a loop, like "|"
-     * @param closeChar             the character that closes a name or loop, like "}" or ">"
+     * @param openChar              the character that opens a name or a nesting, like "{" or "<"
+     * @param separatorChar         the character that separates parts of a nesting, like "|"
+     * @param closeChar             the character that closes a name or nesting, like "}" or ">"
      * @param escapeChar            the character that can escape the openChar, separatorChar, and closeChar
-     * @param customNameRenderer    a {@link CustomNameRenderer} that will be asked if they can render a simple name (so no loops.) Can be null, meaning no special name rendering.
+     * @param customNameRenderer    a {@link CustomNameRenderer} that will be asked if they can render a simple name (so no nesting.) Can be null, meaning no special name rendering.
      * @param customTypeRenderer    a  {@link CustomTypeRenderer} that will be asked if they can render a specific type (class) that was encountered in the model. Can be null, meaning no special type rendering.
      * @param customIteratorFactory a {@link CustomIteratorFactory} that will be asked to create an iterator for a specific type. Can be null, meaning no special ways to create iterators are required.
      */

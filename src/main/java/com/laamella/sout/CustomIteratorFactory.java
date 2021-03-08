@@ -3,7 +3,7 @@ package com.laamella.sout;
 import java.util.Iterator;
 
 /**
- * A loop tries to turn the model value into an iterator for looping.
+ * A nesting tries to turn the model value into an iterator for looping.
  * With a {@link CustomIteratorFactory} you can define additional ways in which model values can be iterated.
  */
 public interface CustomIteratorFactory {

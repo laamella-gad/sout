@@ -19,7 +19,7 @@ class IteratorFactory {
         if (iterator != null) {
             return iterator;
         } else if (model == null) {
-            throw new SoutException(position, "Trying to loop over null.");
+            throw new SoutException(position, "Trying to nest into null.");
         } else if (model instanceof List) {
             return ((List<?>) model).iterator();
         } else if (model instanceof Object[]) {

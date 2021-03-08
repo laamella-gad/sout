@@ -126,8 +126,8 @@ class SoutTemplateParser {
                     }
                     case READING_NAME -> {
                         if (c == separatorChar) {
-                            LoopRenderer loopNode = parseLoopRenderer(text.consume(), context);
-                            renderers.add(loopNode);
+                            NestedRenderer nestedNode = parseNestingRenderer(text.consume(), context);
+                            renderers.add(nestedNode);
                             state = State.READING_TEXT;
                         } else if (c == openChar) {
                             throw new SoutException(context.thisPosition(), "Unexpected open %c in name.", c);
@@ -143,34 +143,39 @@ class SoutTemplateParser {
         }
     }
 
-    private LoopRenderer parseLoopRenderer(String name, Context context) {
+    private NestedRenderer parseNestingRenderer(String name, Context context) {
         int closeChar;
-        var loopParts = new ArrayList<ContainerRenderer>();
+        var nestedParts = new ArrayList<ContainerRenderer>();
         do {
-            var renderersInLoopPart = new ArrayList<Renderer>();
-            closeChar = parseRenderersIntoList(renderersInLoopPart, true, context);
-            loopParts.add(new ContainerRenderer(context.lastPosition(), renderersInLoopPart));
+            var renderersInNestedPart = new ArrayList<Renderer>();
+            closeChar = parseRenderersIntoList(renderersInNestedPart, true, context);
+            nestedParts.add(new ContainerRenderer(context.lastPosition(), renderersInNestedPart));
         } while (closeChar == separatorChar);
         if (closeChar == -1) {
-            throw new SoutException(context.thisPosition(), "End of template while reading a loop.");
+            throw new SoutException(context.thisPosition(), "End of template while reading a nesting.");
         }
-        int parts = loopParts.size();
-        ContainerRenderer mainPart, leadIn = null, separatorPart = null, leadOut = null;
+        int parts = nestedParts.size();
+        ContainerRenderer mainPart, leadIn = null, separatorPart = null, leadOut = null, truePart = null, falsePart = null;
         switch (parts) {
-            case 1 -> mainPart = loopParts.get(0);
+            case 1 -> {
+                mainPart = nestedParts.get(0);
+                truePart = mainPart;
+            }
             case 2 -> {
-                mainPart = loopParts.get(0);
-                separatorPart = loopParts.get(1);
+                mainPart = nestedParts.get(0);
+                separatorPart = nestedParts.get(1);
+                truePart = mainPart;
+                falsePart = separatorPart;
             }
             case 4 -> {
-                leadIn = loopParts.get(0);
-                mainPart = loopParts.get(1);
-                separatorPart = loopParts.get(2);
-                leadOut = loopParts.get(3);
+                leadIn = nestedParts.get(0);
+                mainPart = nestedParts.get(1);
+                separatorPart = nestedParts.get(2);
+                leadOut = nestedParts.get(3);
             }
             // TODO 6 = special separator after the first and before the last element?
-            default -> throw new SoutException(context.lastPosition(), "Wrong amount of parts (%d) for loop %s.", parts, name);
+            default -> throw new SoutException(context.lastPosition(), "Wrong amount of parts (%d) for nesting %s.", parts, name);
         }
-        return new LoopRenderer(name, context.lastPosition(), nameResolver, iteratorFactory, mainPart, separatorPart, leadIn, leadOut);
+        return new NestedRenderer(name, context.lastPosition(), nameResolver, iteratorFactory, mainPart, separatorPart, leadIn, leadOut, truePart, falsePart);
     }
 }

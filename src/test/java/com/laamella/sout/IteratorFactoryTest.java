@@ -84,7 +84,7 @@ public class IteratorFactoryTest {
     public void nullsAreNotIterable() {
         assertThatThrownBy(() -> iteratorFactory.toIterator(null, scope, pos))
                 .isInstanceOf(SoutException.class)
-                .hasMessage("4:3 Trying to loop over null.");
+                .hasMessage("4:3 Trying to nest into null.");
     }
 
     @Test

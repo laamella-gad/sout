@@ -8,11 +8,13 @@ This one can be learned in five minutes. Here we go:
 3. render the template by giving it your model: `template.render(model, output)`
 
 Delimiters are fully configurable. Let's say we have... `<` `|` `>` for opening brace, separator, and closing brace.
-
 With these delimiters, a template would look
 like [this sample](https://github.com/matozoid/sout/blob/master/src/test/resources/templates/hello.sout).
 
-### simple values
+Choose characters for delimiters that do not occur frequently in your template. If you need to use the character
+directly in the output, you can use the (fully configurable) escape character.
+
+## simple values
 
 `<abc>` takes the value named "abc" from the model and toString()'s it.
 
@@ -29,7 +31,27 @@ like [this sample](https://github.com/matozoid/sout/blob/master/src/test/resourc
 - ... or try accessing "isAbc()"
 - ... or try accessing "abc()"
 
-### loops
+## nesting
+
+Anything that nests is written like this:
+
+Opening brace, name, separator, part, [separator, part], closing brace
+
+`<name|part1|part2>`
+
+Which of the parts gets rendered depends on the type of `name`.
+
+### rendering something conditionally
+
+For this, the name needs to resolve to a boolean in the model.
+
+`<foodReady|Yay!>` If the food is ready, `Yay!` will be rendered, else nothing is.
+
+`<foodReady|Yay!|Awww>` If the food is ready, `Yay!` will be rendered, else `Awww`.
+
+### looping over a collection
+
+For this, the name needs to resolve to some kind of collection in the model.
 
 `<abc|<def>>` takes the value "abc" from the model, and the value "def" from that value. If the value of "abc" is a
 collection of some kind, `<def>` will be repeated for each element of the collection.
@@ -63,9 +85,9 @@ separated parts indicates what the separated parts mean:
 | --- |  --- |
 | 1 | the name of the collection in the model, and the main part, the part that gets repeated for every element in the collection |
 | 2 | the name, the main part, and the separator part that comes between the main parts |
-| 4 | name, lead in, main part, separator part, lead out. The lead in and lead out are only rendered when the collection is not empty |
+| 4 | the name, lead in, main part, separator part, lead out. The lead in and lead out are only rendered when the collection is not empty |
 
-### extension
+## extension
 
 Template rendering can be extended at these points:
 
@@ -77,15 +99,15 @@ Template rendering can be extended at these points:
 3. with a CustomIteratorFactory you can make loops over types of collections that are not known to sout. The samples
    contain an iterator factory for a Tuple class.
 
-## Samples
+# Samples
 
 [Various complete samples.](src/test/java/com/laamella/examples/ExamplesTest.java)
 
-## Dependency
+# Dependency
 
 TODO release
 
-## Design decisions
+# Design decisions
 
 - make it do only what it needs to do. Therefore, no template loading infrastructure, no library of formatters, no
   caching mechanics, etc. Only the bare minimum is `public`.

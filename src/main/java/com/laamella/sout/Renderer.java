@@ -80,7 +80,7 @@ class ContainerRenderer extends Renderer {
     }
 }
 
-class LoopRenderer extends Renderer {
+class NestedRenderer extends Renderer {
     private final String name;
     private final NameResolver nameResolver;
     private final IteratorFactory iteratorFactory;
@@ -88,9 +88,12 @@ class LoopRenderer extends Renderer {
     private final ContainerRenderer separatorPart;
     private final ContainerRenderer leadIn;
     private final ContainerRenderer leadOut;
+    private final ContainerRenderer truePart;
+    private final ContainerRenderer falsePart;
 
-    LoopRenderer(String name, Position position, NameResolver nameResolver, IteratorFactory iteratorFactory,
-                 ContainerRenderer mainPart, ContainerRenderer separatorPart, ContainerRenderer leadIn, ContainerRenderer leadOut) {
+    NestedRenderer(String name, Position position, NameResolver nameResolver, IteratorFactory iteratorFactory,
+                   ContainerRenderer mainPart, ContainerRenderer separatorPart, ContainerRenderer leadIn, ContainerRenderer leadOut,
+                   ContainerRenderer truePart, ContainerRenderer falsePart) {
         super(position);
         this.name = name;
         this.nameResolver = nameResolver;
@@ -99,37 +102,51 @@ class LoopRenderer extends Renderer {
         this.separatorPart = separatorPart;
         this.leadIn = leadIn;
         this.leadOut = leadOut;
+        this.truePart = truePart;
+        this.falsePart = falsePart;
     }
 
     @Override
     public void render(Object model, Scope scope, Writer outputWriter) {
-        var collectionResult = nameResolver.resolveComplexNameOnModel(model, name);
-        if (collectionResult.failed) {
-            throw new SoutException(position, collectionResult.message);
+        var nestedModelResult = nameResolver.resolveComplexNameOnModel(model, name);
+        if (nestedModelResult.failed) {
+            throw new SoutException(position, nestedModelResult.message);
         }
-        var collection = collectionResult.value;
-        var iterator = iteratorFactory.toIterator(collection, scope, position);
+        var nestedModel = nestedModelResult.value;
+        var nestedScope = new Scope(scope);
+        if (nestedModel instanceof Boolean) {
+            boolean b = (boolean) nestedModel;
+            if (truePart == null) {
+                throw new SoutException("Wrong amount of parts for rendering a boolean.");
+            }
+            if (b) {
+                truePart.render(model, nestedScope, outputWriter);
+            } else if (falsePart != null) {
+                falsePart.render(model, nestedScope, outputWriter);
+            }
+            return;
+        }
+        var iterator = iteratorFactory.toIterator(nestedModel, scope, position);
         if (!iterator.hasNext()) {
             // Empty collection, nothing to do.
             return;
         }
-        var loopScope = new Scope(scope);
 
         if (leadIn != null) {
-            leadIn.render(model, loopScope, outputWriter);
+            leadIn.render(model, nestedScope, outputWriter);
         }
 
         var printSeparator = false;
         while (iterator.hasNext()) {
             var listElement = iterator.next();
             if (printSeparator && separatorPart != null) {
-                separatorPart.render(listElement, loopScope, outputWriter);
+                separatorPart.render(listElement, nestedScope, outputWriter);
             }
             printSeparator = true;
-            mainPart.render(listElement, loopScope, outputWriter);
+            mainPart.render(listElement, nestedScope, outputWriter);
         }
         if (leadOut != null) {
-            leadOut.render(model, loopScope, outputWriter);
+            leadOut.render(model, nestedScope, outputWriter);
         }
     }
 

@@ -61,6 +61,30 @@ public class SoutTemplateTest {
     }
 
     @Test
+    public void oneElementConditionalIsTrue() {
+        var template = parse("How does it taste? {|The salad is salty!}");
+        assertRendered("How does it taste? The salad is salty!", template, true);
+    }
+
+    @Test
+    public void oneElementConditionalIsFalse() {
+        var template = parse("How does it taste?{| The salad is salty!}");
+        assertRendered("How does it taste?", template, false);
+    }
+
+    @Test
+    public void twoElementConditionalIsTrue() {
+        var template = parse("How does it taste? The salad is {|salty|sweet}!");
+        assertRendered("How does it taste? The salad is salty!", template, true);
+    }
+
+    @Test
+    public void twoElementConditionalIsFalse() {
+        var template = parse("How does it taste? The salad is {|salty|sweet}!");
+        assertRendered("How does it taste? The salad is sweet!", template, false);
+    }
+
+    @Test
     public void nestedName() {
         var template = parse("{recurser|{value}} {recurser|{recurser|{value}}} {recurser|{recurser|{recurser|{value}}}}");
         var data = new TestModel();
@@ -165,25 +189,25 @@ public class SoutTemplateTest {
     }
 
     @Test
-    public void unexpectedEndOfFileWhileReadingLoop() {
+    public void unexpectedEndOfFileWhileReadingNesting() {
         assertThatThrownBy(() -> parse("123{abc|def|ghi"))
                 .isInstanceOf(SoutException.class)
-                .hasMessage("1:16 End of template while reading a loop.");
+                .hasMessage("1:16 End of template while reading a nesting.");
     }
 
     @Test
-    public void wrongAmountOfPartsForLoop() {
+    public void wrongAmountOfPartsForNesting() {
         assertThatThrownBy(() -> parse("{abc|def|ghi|jkl}"))
                 .isInstanceOf(SoutException.class)
-                .hasMessage("1:17 Wrong amount of parts (3) for loop abc.");
+                .hasMessage("1:17 Wrong amount of parts (3) for nesting abc.");
     }
 
     @Test
-    public void loopingOverNull() {
-        var selfLoopTemplate = parse("{|}");
-        assertThatThrownBy(() -> selfLoopTemplate.render(null, new StringWriter()))
+    public void nestingIntoNull() {
+        var selfNestingTemplate = parse("{|}");
+        assertThatThrownBy(() -> selfNestingTemplate.render(null, new StringWriter()))
                 .isInstanceOf(SoutException.class)
-                .hasMessage("1:3 Trying to loop over null.");
+                .hasMessage("1:3 Trying to nest into null.");
     }
 
     @Test
