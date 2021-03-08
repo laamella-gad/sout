@@ -6,7 +6,8 @@ import java.io.Writer;
  * The standard type handler for booleans. Takes one or two parts.
  * Renders the first when the boolean is true, renders the second if it exists and the boolean is false.
  */
-public class BooleanRenderer implements CustomTypeRenderer {
+class BooleanRenderer implements CustomTypeRenderer {
+    @Override
     public boolean render(String name, Renderable[] parts, Object model, Scope scope, Object parentModel, Scope parentScope, Position position, Writer outputWriter) {
         if (!(model instanceof Boolean)) {
             return false;
