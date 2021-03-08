@@ -8,11 +8,14 @@ public interface CustomNameRenderer {
     /**
      * Custom name rendering. Ignored for loop syntax.
      *
-     * @param model        the data model where the name can be evaluated.
      * @param name         the name to evaluate.
+     * @param parts
+     * @param model        the data model where the name can be evaluated.
+     * @param scope
+     * @param position
      * @param outputWriter the output writer.
      * @return true when this handler has handled the name, and no further processing needs to be done.
      * false when normal evaluation should continue (meaning the normal evaluation of name on the model.)
      */
-    boolean render(Object model, String name, Scope scope, Writer outputWriter) throws IOException;
+    boolean render(String name, Renderable[] parts, Object model, Scope scope, Position position, Writer outputWriter) throws IOException;
 }

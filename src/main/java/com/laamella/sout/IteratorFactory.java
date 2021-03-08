@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static java.util.Arrays.stream;
-import static java.util.Collections.singletonList;
 
 class IteratorFactory {
     private final CustomIteratorFactory customIteratorFactory;
@@ -47,8 +46,7 @@ class IteratorFactory {
         } else if (model instanceof Iterable) {
             return ((Iterable<?>) model).iterator();
         }
-        // TODO and so on, and so on...
-        return singletonList(model).iterator();
+        return null;
     }
 
     static class ByteArrayIterator implements Iterator<Byte> {

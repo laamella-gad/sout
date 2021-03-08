@@ -5,6 +5,9 @@ import java.util.Map;
 
 import static java.util.Objects.requireNonNull;
 
+/**
+ * A scope that holds user-defined variables.
+ */
 public class Scope {
     private final Scope parentScope;
     private final Map<String, Object> variables = new HashMap<>();

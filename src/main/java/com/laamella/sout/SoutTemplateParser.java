@@ -154,28 +154,7 @@ class SoutTemplateParser {
         if (closeChar == -1) {
             throw new SoutException(context.thisPosition(), "End of template while reading a nesting.");
         }
-        int parts = nestedParts.size();
-        ContainerRenderer mainPart, leadIn = null, separatorPart = null, leadOut = null, truePart = null, falsePart = null;
-        switch (parts) {
-            case 1 -> {
-                mainPart = nestedParts.get(0);
-                truePart = mainPart;
-            }
-            case 2 -> {
-                mainPart = nestedParts.get(0);
-                separatorPart = nestedParts.get(1);
-                truePart = mainPart;
-                falsePart = separatorPart;
-            }
-            case 4 -> {
-                leadIn = nestedParts.get(0);
-                mainPart = nestedParts.get(1);
-                separatorPart = nestedParts.get(2);
-                leadOut = nestedParts.get(3);
-            }
-            // TODO 6 = special separator after the first and before the last element?
-            default -> throw new SoutException(context.lastPosition(), "Wrong amount of parts (%d) for nesting %s.", parts, name);
-        }
-        return new NestedRenderer(name, context.lastPosition(), nameResolver, iteratorFactory, mainPart, separatorPart, leadIn, leadOut, truePart, falsePart);
+        Renderable[] parts = nestedParts.stream().map(Renderable.class::cast).toArray(Renderable[]::new);
+        return new NestedRenderer(name, context.lastPosition(), nameResolver, customNameRenderer, customTypeRenderer, iteratorFactory, parts);
     }
 }

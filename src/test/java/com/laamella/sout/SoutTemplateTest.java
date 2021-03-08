@@ -47,6 +47,20 @@ public class SoutTemplateTest {
     }
 
     @Test
+    public void threeElementLoopIsIllegal() {
+        var template = parse("Hello {name}, {friends|{name}| and |oops}!");
+        var data = ImmutableMap.of(
+                "name", "Piet",
+                "friends", ImmutableList.of(
+                        ImmutableMap.of("name", "Hans"),
+                        ImmutableMap.of("name", "Henk")));
+
+        assertThatThrownBy(() -> template.render(data, new StringWriter()))
+                .isInstanceOf(SoutException.class)
+                .hasMessage("1:41 Wrong amount of parts (3) for rendering loop \"friends\".");
+    }
+
+    @Test
     public void fourElementLoop() {
         var template = parse("Hello {name}{friends| and your {friendState} friends |{name}| and |! {exclamation}}");
         var data = ImmutableMap.of(
@@ -58,6 +72,20 @@ public class SoutTemplateTest {
                         ImmutableMap.of("name", "Henk")));
 
         assertRendered("Hello Piet and your happy friends Hans and Henk! hurray!", template, data);
+    }
+
+    @Test
+    public void fiveElementLoopIsIllegal() {
+        var template = parse("Hello {name}, {friends|{name}| and |oops|oops|oops}!");
+        var data = ImmutableMap.of(
+                "name", "Piet",
+                "friends", ImmutableList.of(
+                        ImmutableMap.of("name", "Hans"),
+                        ImmutableMap.of("name", "Henk")));
+
+        assertThatThrownBy(() -> template.render(data, new StringWriter()))
+                .isInstanceOf(SoutException.class)
+                .hasMessage("1:51 Wrong amount of parts (5) for rendering loop \"friends\".");
     }
 
     @Test
@@ -82,6 +110,14 @@ public class SoutTemplateTest {
     public void twoElementConditionalIsFalse() {
         var template = parse("How does it taste? The salad is {|salty|sweet}!");
         assertRendered("How does it taste? The salad is sweet!", template, false);
+    }
+
+    @Test
+    public void threeElementConditionalIsNonsense() {
+        var template = parse("How does it taste? The salad is {|salty|sweet|moldy}!");
+        assertThatThrownBy(() -> template.render(false, new StringWriter()))
+                .isInstanceOf(SoutException.class)
+                .hasMessage("1:52 Wrong amount of parts (3) for rendering boolean \"\".");
     }
 
     @Test
@@ -147,7 +183,7 @@ public class SoutTemplateTest {
 
     @Test
     public void specialNullRendererAllowsNullsInTheModel() {
-        CustomTypeRenderer allowNullCustomTypeRenderer = (model, scope, outputWriter) -> model == null;
+        CustomTypeRenderer allowNullCustomTypeRenderer = (name, parts, nestedModel, nestedScope, model, scope, position, outputWriter) -> model == null;
         var configuration = new SoutConfiguration('{', '|', '}', '\\', null, allowNullCustomTypeRenderer, null);
         var selfTemplate = parse("{}", configuration);
         assertRendered("", selfTemplate, null);
@@ -155,7 +191,7 @@ public class SoutTemplateTest {
 
     @Test
     public void specialRenderer() {
-        CustomTypeRenderer specialCustomTypeRenderer = (model, scope, output) -> {
+        CustomTypeRenderer specialCustomTypeRenderer = (name, parts, nestedModel, nestedScope, model, scope, position, output) -> {
             if (model instanceof Integer) {
                 output.append("INT");
                 return true;
@@ -193,13 +229,6 @@ public class SoutTemplateTest {
         assertThatThrownBy(() -> parse("123{abc|def|ghi"))
                 .isInstanceOf(SoutException.class)
                 .hasMessage("1:16 End of template while reading a nesting.");
-    }
-
-    @Test
-    public void wrongAmountOfPartsForNesting() {
-        assertThatThrownBy(() -> parse("{abc|def|ghi|jkl}"))
-                .isInstanceOf(SoutException.class)
-                .hasMessage("1:17 Wrong amount of parts (3) for nesting abc.");
     }
 
     @Test

@@ -2,18 +2,19 @@ package com.laamella.sout;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Arrays;
 import java.util.List;
 
 import static java.util.stream.Collectors.joining;
 
-abstract class Renderer {
+abstract class Renderer implements Renderable {
     final Position position;
 
     Renderer(Position position) {
         this.position = position;
     }
 
-    abstract void render(Object model, Scope scope, Writer outputWriter);
+    public abstract void render(Object model, Scope scope, Writer outputWriter);
 }
 
 class NameRenderer extends Renderer {
@@ -31,9 +32,9 @@ class NameRenderer extends Renderer {
     }
 
     @Override
-    void render(Object model, Scope scope, Writer outputWriter) {
+    public void render(Object model, Scope scope, Writer outputWriter) {
         try {
-            if (customNameRenderer.render(model, name, scope, outputWriter)) {
+            if (customNameRenderer.render(name, null, model, scope, position, outputWriter)) {
                 return;
             }
             NameResolver.Result subModelResult = nameResolver.resolveComplexNameOnModel(model, name);
@@ -41,7 +42,7 @@ class NameRenderer extends Renderer {
                 throw new SoutException(position, subModelResult.message);
             }
             var subModel = subModelResult.value;
-            if (customTypeRenderer.write(subModel, scope, outputWriter)) {
+            if (customTypeRenderer.render(name, null, null, null, subModel, scope, position, outputWriter)) {
                 return;
             }
             if (subModel == null) {
@@ -68,7 +69,7 @@ class ContainerRenderer extends Renderer {
     }
 
     @Override
-    void render(Object model, Scope scope, Writer outputWriter) {
+    public void render(Object model, Scope scope, Writer outputWriter) {
         for (var child : children) {
             child.render(model, scope, outputWriter);
         }
@@ -83,81 +84,58 @@ class ContainerRenderer extends Renderer {
 class NestedRenderer extends Renderer {
     private final String name;
     private final NameResolver nameResolver;
-    private final IteratorFactory iteratorFactory;
-    private final ContainerRenderer mainPart;
-    private final ContainerRenderer separatorPart;
-    private final ContainerRenderer leadIn;
-    private final ContainerRenderer leadOut;
-    private final ContainerRenderer truePart;
-    private final ContainerRenderer falsePart;
+    private final CustomNameRenderer customNameRenderer;
+    private final CustomTypeRenderer customTypeRenderer;
+    private final Renderable[] parts;
+    private final BooleanRenderer booleanRenderer = new BooleanRenderer();
+    private final CollectionRenderer collectionRenderer;
+    private final SimpleNestingRenderer simpleNestingRenderer = new SimpleNestingRenderer();
 
-    NestedRenderer(String name, Position position, NameResolver nameResolver, IteratorFactory iteratorFactory,
-                   ContainerRenderer mainPart, ContainerRenderer separatorPart, ContainerRenderer leadIn, ContainerRenderer leadOut,
-                   ContainerRenderer truePart, ContainerRenderer falsePart) {
+    NestedRenderer(String name, Position position, NameResolver nameResolver, CustomNameRenderer customNameRenderer, CustomTypeRenderer customTypeRenderer, IteratorFactory iteratorFactory, Renderable[] parts) {
         super(position);
         this.name = name;
         this.nameResolver = nameResolver;
-        this.iteratorFactory = iteratorFactory;
-        this.mainPart = mainPart;
-        this.separatorPart = separatorPart;
-        this.leadIn = leadIn;
-        this.leadOut = leadOut;
-        this.truePart = truePart;
-        this.falsePart = falsePart;
+        this.customNameRenderer = customNameRenderer;
+        this.customTypeRenderer = customTypeRenderer;
+        this.parts = parts;
+        this.collectionRenderer = new CollectionRenderer(iteratorFactory);
     }
 
     @Override
     public void render(Object model, Scope scope, Writer outputWriter) {
-        var nestedModelResult = nameResolver.resolveComplexNameOnModel(model, name);
-        if (nestedModelResult.failed) {
-            throw new SoutException(position, nestedModelResult.message);
-        }
-        var nestedModel = nestedModelResult.value;
-        var nestedScope = new Scope(scope);
-        if (nestedModel instanceof Boolean) {
-            boolean b = (boolean) nestedModel;
-            if (truePart == null) {
-                throw new SoutException("Wrong amount of parts for rendering a boolean.");
+        try {
+            if (customNameRenderer.render(name, parts, model, scope, position, outputWriter)) {
+                return;
             }
-            if (b) {
-                truePart.render(model, nestedScope, outputWriter);
-            } else if (falsePart != null) {
-                falsePart.render(model, nestedScope, outputWriter);
-            }
-            return;
-        }
-        var iterator = iteratorFactory.toIterator(nestedModel, scope, position);
-        if (!iterator.hasNext()) {
-            // Empty collection, nothing to do.
-            return;
-        }
 
-        if (leadIn != null) {
-            leadIn.render(model, nestedScope, outputWriter);
-        }
-
-        var printSeparator = false;
-        while (iterator.hasNext()) {
-            var listElement = iterator.next();
-            if (printSeparator && separatorPart != null) {
-                separatorPart.render(listElement, nestedScope, outputWriter);
+            var nestedModelResult = nameResolver.resolveComplexNameOnModel(model, name);
+            if (nestedModelResult.failed) {
+                throw new SoutException(position, nestedModelResult.message);
             }
-            printSeparator = true;
-            mainPart.render(listElement, nestedScope, outputWriter);
-        }
-        if (leadOut != null) {
-            leadOut.render(model, nestedScope, outputWriter);
+            var nestedModel = nestedModelResult.value;
+            var nestedScope = new Scope(scope);
+
+            if (customTypeRenderer.render(name, parts, nestedModel, nestedScope, model, scope, position, outputWriter)) {
+                return;
+            }
+            if (booleanRenderer.render(name, parts, nestedModel, nestedScope, model, scope, position, outputWriter)) {
+                return;
+            }
+            if (collectionRenderer.render(name, parts, nestedModel, nestedScope, model, scope, position, outputWriter)) {
+                return;
+            }
+            if (simpleNestingRenderer.render(name, parts, nestedModel, nestedScope, model, scope, position, outputWriter)) {
+                return;
+            }
+            throw new SoutException(position, "Don't know how to render %s.", name);
+        } catch (IOException e) {
+            throw new SoutException(position, e);
         }
     }
 
     @Override
     public String toString() {
-        return '❰' + name +
-                (leadIn != null ? "❚" + leadIn : "") +
-                "❚" + mainPart +
-                (separatorPart != null ? "❚" + separatorPart : "") +
-                (leadOut != null ? "❚" + leadOut : "")
-                + '❱';
+        return '❰' + name + "❚" + Arrays.stream(parts).map(Object::toString).collect(joining("❚")) + '❱';
     }
 }
 

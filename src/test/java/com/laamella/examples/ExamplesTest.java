@@ -51,9 +51,9 @@ public class ExamplesTest {
     public void useACustomDateFormatter() {
         var customDateRenderer = new CustomTypeRenderer() {
             @Override
-            public boolean write(Object model, Scope scope, Writer outputWriter) throws IOException {
-                if (model instanceof Date) {
-                    var formattedDate = new SimpleDateFormat("dd-MM-yyyy").format((Date) model);
+            public boolean render(String name, Renderable[] parts, Object model, Scope scope, Object parentModel, Scope parentScope, Position position, Writer outputWriter) throws IOException {
+                if (parentModel instanceof Date) {
+                    var formattedDate = new SimpleDateFormat("dd-MM-yyyy").format((Date) parentModel);
                     outputWriter.write(formattedDate);
                     return true;
                 }
@@ -101,7 +101,7 @@ public class ExamplesTest {
         }
 
         @Override
-        public boolean render(Object model, String name, Scope scope, Writer outputWriter) {
+        public boolean render(String name, Renderable[] parts, Object model, Scope scope, Position position, Writer outputWriter) {
             SoutTemplate template = templates.get(name);
             if (template == null) {
                 return false;
@@ -111,10 +111,9 @@ public class ExamplesTest {
         }
     }
 
-
     @Test
     public void chainCustomTypeRenderers() {
-        CustomTypeRenderer dummyTypeRenderer = (model, scope, outputWriter) -> false;
+        CustomTypeRenderer dummyTypeRenderer = (name, parts, nestedModel, nestedScope, model, scope, position, outputWriter) -> false;
 
         var customTypeRendererList = new CustomTypeRendererList(dummyTypeRenderer, dummyTypeRenderer, dummyTypeRenderer);
 
@@ -138,16 +137,15 @@ public class ExamplesTest {
         }
 
         @Override
-        public boolean write(Object model, Scope scope, Writer outputWriter) throws IOException {
+        public boolean render(String name, Renderable[] parts, Object model, Scope scope, Object parentModel, Scope parentScope, Position position, Writer outputWriter) throws IOException {
             for (CustomTypeRenderer renderer : renderers) {
-                if (renderer.write(model, scope, outputWriter)) {
+                if (renderer.render(name, parts, model, scope, parentModel, parentScope, position, outputWriter)) {
                     return true;
                 }
             }
             return false;
         }
     }
-
 
     @Test
     public void useNameResolverToAddACounter() {
@@ -162,7 +160,7 @@ public class ExamplesTest {
 
     static class CounterRenderer implements CustomNameRenderer {
         @Override
-        public boolean render(Object model, String name, Scope scope, Writer outputWriter) throws IOException {
+        public boolean render(String name, Renderable[] parts, Object model, Scope scope, Position position, Writer outputWriter) throws IOException {
             // "startsWith" so that you can define different counters like "{counter1}{counter-tiles}{counterABC}"
             if (name.startsWith("counter")) {
                 Integer count = scope.getVariable(name, 1);
