@@ -6,14 +6,18 @@ import java.util.stream.Stream;
 
 import static java.util.Arrays.stream;
 
-class IteratorFactory {
+/**
+ * This iterator factory is always in use, creating iterators for the collections, arrays, etc. in the JDK.
+ */
+class IteratorFactory implements CustomIteratorFactory {
     private final CustomIteratorFactory customIteratorFactory;
 
     IteratorFactory(CustomIteratorFactory customIteratorFactory) {
         this.customIteratorFactory = customIteratorFactory;
     }
 
-    Iterator<?> toIterator(Object model, Scope scope, Position position) {
+    @Override
+    public Iterator<?> toIterator(Object model, Scope scope, Position position) {
         Iterator<?> iterator = customIteratorFactory.toIterator(model, scope, position);
         if (iterator != null) {
             return iterator;

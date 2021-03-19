@@ -3,7 +3,7 @@ package com.laamella.sout;
 import java.io.Writer;
 
 /**
- * When everything else fails, this one will simply render the single supplied part.
+ * When all other renderers fail, this one will simply render the single supplied part.
  */
 public class SimpleNestingRenderer implements CustomTypeRenderer {
     @Override

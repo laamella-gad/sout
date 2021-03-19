@@ -5,6 +5,9 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Parses a template to an AST. See {@link Renderer}.
+ */
 class SoutTemplateParser {
     private final int openChar;
     private final int separatorChar;
@@ -15,10 +18,11 @@ class SoutTemplateParser {
     private final CustomNameRenderer customNameRenderer;
     private final CustomTypeRenderer customTypeRenderer;
 
-    public SoutTemplateParser(int openChar, int separatorChar, int closeChar, int escapeChar,
-                              IteratorFactory iteratorFactory,
-                              CustomNameRenderer customNameRenderer,
-                              CustomTypeRenderer customTypeRenderer) {
+    public SoutTemplateParser(
+            int openChar, int separatorChar, int closeChar, int escapeChar,
+            IteratorFactory iteratorFactory,
+            CustomNameRenderer customNameRenderer,
+            CustomTypeRenderer customTypeRenderer) {
         this.openChar = openChar;
         this.separatorChar = separatorChar;
         this.closeChar = closeChar;

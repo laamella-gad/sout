@@ -8,13 +8,14 @@ public interface CustomTypeRenderer {
     /**
      * Custom rendering for types.
      *
-     * @param name
-     * @param parts
+     * @param name         the name being rendered
+     * @param parts        the parts supplied to the name. null when no parts are there.
      * @param model        the value to write to the output.
-     * @param scope
-     * @param parentModel
-     * @param parentScope
-     * @param outputWriter the output.
+     * @param scope        a place to store variables that can be seen inside the nesting.
+     * @param parentModel  when nesting, this is the value that contains "model".
+     * @param parentScope  when nesting, this is the scope just above the nesting.
+     * @param position     the position in the template, for passing to a {@link SoutException}.
+     * @param outputWriter where to write your output.
      * @return true if this {@link CustomTypeRenderer} has written the type and no further handling is wanted.
      */
     boolean render(String name, Renderable[] parts, Object model, Scope scope, Object parentModel, Scope parentScope, Position position, Writer outputWriter) throws IOException;

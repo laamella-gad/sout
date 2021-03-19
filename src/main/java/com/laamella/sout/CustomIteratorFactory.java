@@ -8,6 +8,9 @@ import java.util.Iterator;
  */
 public interface CustomIteratorFactory {
     /**
+     * @param model    the value we want to iterate over.
+     * @param scope    the scope
+     * @param position the position in the template, for passing to a {@link SoutException} when wanted.
      * @return an {@link Iterator} for model, or null if this factory doesn't handle this kind of model.
      */
     Iterator<?> toIterator(Object model, Scope scope, Position position);

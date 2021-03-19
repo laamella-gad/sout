@@ -1,5 +1,8 @@
 package com.laamella.sout;
 
+/**
+ * A position in a text file.
+ */
 public class Position {
     final int column, row;
 

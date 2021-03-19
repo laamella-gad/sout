@@ -7,6 +7,11 @@ import java.util.List;
 
 import static java.util.stream.Collectors.joining;
 
+/**
+ * The base of the Abstract Syntax Tree for the template.
+ * In other words: this is an easy to use structure that represents a template after we've parsed it.
+ * Its main purpose is to render the template.
+ */
 abstract class Renderer implements Renderable {
     final Position position;
 

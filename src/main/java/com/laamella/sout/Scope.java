@@ -16,6 +16,10 @@ public class Scope {
         this.parentScope = parentScope;
     }
 
+    /**
+     * @return the value of variable "name".
+     * If it wasn't defined yet, it is defined in this scope, and set to "def".
+     */
     @SuppressWarnings("unchecked")
     public <T> T getVariable(String name, T def) {
         var nameScope = findScopeContainingName(requireNonNull(name));
@@ -26,6 +30,10 @@ public class Scope {
         return (T) nameScope.variables.get(name);
     }
 
+    /**
+     * @return the scope where name is defined.
+     * If it hasn't been defined anywhere, null is returned.
+     */
     private Scope findScopeContainingName(String name) {
         if (variables.containsKey(requireNonNull(name))) {
             return this;
@@ -36,6 +44,11 @@ public class Scope {
         return parentScope.findScopeContainingName(name);
     }
 
+    /**
+     * Set a variable to a new value in the scope where it is defined.
+     *
+     * @throws SoutException if name isn't defined in any scope.
+     */
     public <T> T updateVariable(String name, T newValue) {
         var scope = findScopeContainingName(requireNonNull(name));
         if (scope == null) {
@@ -45,16 +58,27 @@ public class Scope {
         return newValue;
     }
 
-    public void setLocalVariable(String name, Object value) {
+    /**
+     * Set a variable to a value in this scope.
+     */
+    public void setVariable(String name, Object value) {
         variables.put(requireNonNull(name), value);
     }
 
-    public void setGlobalVariable(String name, Object value) {
-        requireNonNull(name);
+    /**
+     * @return the scope above this scope. null if this is the global scope.
+     */
+    public Scope getParentScope() {
+        return parentScope;
+    }
+
+    /**
+     * @return the global scope, where global variables can be stored.
+     */
+    public Scope getGlobalScope() {
         if (parentScope == null) {
-            variables.put(name, value);
-        } else {
-            parentScope.setGlobalVariable(name, value);
+            return this;
         }
+        return parentScope.getGlobalScope();
     }
 }
