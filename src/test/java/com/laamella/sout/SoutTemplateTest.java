@@ -183,7 +183,7 @@ public class SoutTemplateTest {
 
     @Test
     public void specialNullRendererAllowsNullsInTheModel() {
-        CustomTypeRenderer allowNullCustomTypeRenderer = (name, parts, nestedModel, nestedScope, model, scope, position, outputWriter) -> model == null;
+        CustomTypeRenderer allowNullCustomTypeRenderer = (name, parts, model, scope, parentModel, parentScope, position, outputWriter) -> model == null;
         var configuration = new SoutConfiguration('{', '|', '}', '\\', null, allowNullCustomTypeRenderer, null);
         var selfTemplate = parse("{}", configuration);
         assertRendered("", selfTemplate, null);
@@ -191,7 +191,7 @@ public class SoutTemplateTest {
 
     @Test
     public void specialRenderer() {
-        CustomTypeRenderer specialCustomTypeRenderer = (name, parts, nestedModel, nestedScope, model, scope, position, output) -> {
+        CustomTypeRenderer specialCustomTypeRenderer = (name, parts, model, scope, parentModel, parentScope, position, output) -> {
             if (model instanceof Integer) {
                 output.append("INT");
                 return true;

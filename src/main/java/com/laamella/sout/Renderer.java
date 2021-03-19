@@ -47,7 +47,7 @@ class NameRenderer extends Renderer {
                 throw new SoutException(position, subModelResult.message);
             }
             var subModel = subModelResult.value;
-            if (customTypeRenderer.render(name, null, null, null, subModel, scope, position, outputWriter)) {
+            if (customTypeRenderer.render(name, null, subModel, scope, null, null, position, outputWriter)) {
                 return;
             }
             if (subModel == null) {

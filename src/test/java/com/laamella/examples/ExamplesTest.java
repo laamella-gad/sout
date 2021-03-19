@@ -52,8 +52,8 @@ public class ExamplesTest {
         var customDateRenderer = new CustomTypeRenderer() {
             @Override
             public boolean render(String name, Renderable[] parts, Object model, Scope scope, Object parentModel, Scope parentScope, Position position, Writer outputWriter) throws IOException {
-                if (parentModel instanceof Date) {
-                    var formattedDate = new SimpleDateFormat("dd-MM-yyyy").format((Date) parentModel);
+                if (model instanceof Date) {
+                    var formattedDate = new SimpleDateFormat("dd-MM-yyyy").format((Date) model);
                     outputWriter.write(formattedDate);
                     return true;
                 }
@@ -113,7 +113,7 @@ public class ExamplesTest {
 
     @Test
     public void chainCustomTypeRenderers() {
-        CustomTypeRenderer dummyTypeRenderer = (name, parts, nestedModel, nestedScope, model, scope, position, outputWriter) -> false;
+        CustomTypeRenderer dummyTypeRenderer = (name, parts, model, scope, parentModel, parentScope, position, outputWriter) -> false;
 
         var customTypeRendererList = new CustomTypeRendererList(dummyTypeRenderer, dummyTypeRenderer, dummyTypeRenderer);
 
