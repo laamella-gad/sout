@@ -30,13 +30,13 @@ public class SoutTemplate {
     /**
      * Render a template.
      *
-     * @param data         the model containing the data that should be filled in the template.
+     * @param model        the model containing the data that should be filled in the template.
      * @param outputWriter where the result will be written.
      * @throws SoutException when something goes wrong with rendering the template.
      */
-    public void render(Object data, Writer outputWriter) {
+    public void render(Object model, Writer outputWriter) {
         requireNonNull(outputWriter);
-        rootRenderer.render(data, new Scope(null), outputWriter);
+        rootRenderer.render(model, new Scope(null), outputWriter);
     }
 
     @Override
