@@ -16,11 +16,11 @@ directly in the output, you can use the (fully configurable) escape character.
 
 ## simple values
 
-`<abc>` takes the value named "abc" from the model and toString()'s it.
+`<abc>` takes the value named "abc" from the model and renders it to a string.
 
 `<abc.def>` is a nice shortcut that takes the value named "def" from the value named "abc" from the model.
 
-`<>` toString()'s the model itself.
+`<>` converts the model itself to a string.
 
 "Taking the value named abc" means looking at the model, and...
 
@@ -41,7 +41,7 @@ Opening brace, name, separator, part, [separator, part], closing brace
 
 Which of the parts gets rendered depends on the type of `name`.
 
-### rendering something conditionally
+### conditional rendering
 
 For this, the name needs to resolve to a boolean in the model.
 
@@ -110,11 +110,11 @@ TODO release
 # Design decisions
 
 - make it do only what it needs to do. Therefore, no template loading infrastructure, no library of formatters, no
-  caching mechanics, etc. Only the bare minimum is `public`.
+  caching mechanics, etc. All of these can be built, but it would make the library opinionated, and a template library will probably need to work in an environment with a different opinion.
+- Only the bare minimum API is `public` to improve discoverability.
 - make everything straightforward. No builders, no hidden static factory methods, no accidentally public methods, etc.
-  If there is something in the JDK that is good enough, don't reinvent it.
-- avoid complexity in the template language - special formatting is done in code (that makes it more of a viewmodel-view
-  library?)
-- open for extension. Rendering can be completely customized at various points.
+- If there is something in the JDK that is good enough, don't reinvent it.
+- avoid complexity in the template language - special formatting is done in code. We have great tooling for code!
+- open for extension. Rendering can be completely customized at various points. New functionality can be added in several ways.
 - strict by default: a template can't be created from an invalid template text, nulls will abort template rendering,
-  etc.
+  etc. Don't accidentally render `Good afternoon insert name here`, `You have clicked this button NaN times` or `Yours, null`.
