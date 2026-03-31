@@ -105,7 +105,19 @@ Template rendering can be extended at these points:
 
 # Dependency
 
-TODO release
+Maven:
+```xml
+<dependency>
+    <groupId>com.laamella</groupId>
+    <artifactId>sout</artifactId>
+    <version>1.0.0</version>
+</dependency>
+```
+
+Gradle:
+```groovy
+implementation 'com.laamella:sout:1.0.0'
+```
 
 # Design decisions
 
